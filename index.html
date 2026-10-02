@@ -40,6 +40,8 @@
         <p><button type="submit" id="login-btn">Enter</button></p>
         <p id="login-msg"></p>
       </form>
+      <p id="reset-row" class="hidden"><button class="ghost" id="reset-pin" type="button">Forgot the PIN? Reset it</button> <span class="warn">Clears the saved PIN in this browser. No study progress is lost.</span></p>
+      <p id="reset-confirm" class="hidden">Clear the saved PIN? You will choose a new one on the next entry. <button id="reset-yes" type="button">Clear it</button> <button class="ghost" id="reset-no" type="button">Keep it</button></p>
     </section>
     <section id="app" class="hidden">
       <p>Signed in on this browser. <button class="ghost" id="logout" type="button">Lock</button></p>
@@ -81,7 +83,12 @@
       ["Someone says the pipeline failed. What do you say?", "The oven rejected the batch. A pipeline builds and tests the change automatically. A failure means it did not pass the gate, so it should not ship until the cause is fixed and the run is green."],
       ["Why would a defense contractor care?", "Every change is tracked, reviewed, and tied to a result. That is configuration management with an audit trail, plus company login and role-based access through Entra ID."],
       ["What is a pull request, in plain language?", "It is a proposed change to the recipe book. Someone reviews it, checks run, and only then does it become the current recipe."],
-      ["Boards or Repos: which one is the backlog?", "Boards. Repos is the recipe book, the source code. Boards is the order list."]
+      ["Boards or Repos: which one is the backlog?", "Boards. Repos is the recipe book, the source code. Boards is the order list."],
+      ["Continuous delivery or continuous deployment: what is the difference?", "Delivery means every batch that passes the oven is boxed and waiting at the back door, and a person decides when it goes out front. Deployment means it goes straight to the counter with no human gate. Same oven, different last step."],
+      ["A contractor needs access to one project only. How do you set that up?", "Through the company login, not a new bakery key. Entra ID carries the identity and the project role carries the permission, so you grant the lowest role that does the job on that one project. That is a counter key, not a master key."],
+      ["What is a build agent?", "The baker who actually does the work. The pipeline is the recipe card; the agent is the hands and the oven running the steps. Microsoft-hosted agents are rented kitchen time, cleaned between batches. Self-hosted agents are your own kitchen, which you maintain but fully control."],
+      ["A script needs to read the repo overnight. What do you give it?", "A personal access token scoped to read that one repo, with a short expiry. It is a spare key cut for one door. The risk is that it acts as you, so it does whatever its scope allows if it leaks. Revoke it when the job is done."],
+      ["How is a sprint different from a milestone on the program schedule?", "A sprint is a fixed short batch window, usually two weeks, where the team commits to a set of orders and finishes them. A milestone is a promised date you owe the customer. Boards tracks the sprint; the program schedule still owns the milestone."]
     ];
     const PALACE = [
       ["Front counter", "Boards", "Orders are written here. That is the backlog: what to bake, special requests, and tomorrow's plan."],
@@ -161,7 +168,18 @@
     const app = document.getElementById("app");
     const form = document.getElementById("login-form");
     const pin = document.getElementById("pin");
-    document.getElementById("login-btn").textContent = localStorage.getItem(KEY) ? "Enter" : "Set PIN and enter";
+    const loginBtn = document.getElementById("login-btn");
+    const loginMsg = document.getElementById("login-msg");
+    const resetRow = document.getElementById("reset-row");
+    const resetConfirm = document.getElementById("reset-confirm");
+    function syncGate() {
+      const saved = localStorage.getItem(KEY);
+      loginBtn.textContent = saved ? "Enter" : "Set PIN and enter";
+      pin.autocomplete = saved ? "current-password" : "new-password";
+      resetRow.classList.toggle("hidden", !saved);
+      resetConfirm.classList.add("hidden");
+    }
+    syncGate();
     function openApp() { gate.classList.add("hidden"); app.classList.remove("hidden"); show("Home"); }
     if (sessionStorage.getItem("ado-hub-open") === "1") openApp();
     form.addEventListener("submit", (e) => {
@@ -169,8 +187,22 @@
       const saved = localStorage.getItem(KEY);
       if (!saved) { localStorage.setItem(KEY, pin.value); sessionStorage.setItem("ado-hub-open", "1"); openApp(); return; }
       if (pin.value === saved) { sessionStorage.setItem("ado-hub-open", "1"); openApp(); }
-      else document.getElementById("login-msg").textContent = "That PIN does not match the one saved in this browser.";
+      else loginMsg.textContent = "That PIN does not match the one saved in this browser.";
     });
+    document.getElementById("reset-pin").onclick = () => {
+      resetRow.classList.add("hidden");
+      resetConfirm.classList.remove("hidden");
+      loginMsg.textContent = "";
+    };
+    document.getElementById("reset-no").onclick = () => syncGate();
+    document.getElementById("reset-yes").onclick = () => {
+      localStorage.removeItem(KEY);
+      sessionStorage.removeItem("ado-hub-open");
+      pin.value = "";
+      syncGate();
+      loginMsg.textContent = "PIN cleared. Type a new one and it will be saved.";
+      pin.focus();
+    };
     document.getElementById("logout").onclick = () => { sessionStorage.removeItem("ado-hub-open"); location.reload(); };
   </script>
 </body>
