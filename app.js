@@ -34,7 +34,6 @@
     "AI and automation",
   ];
   let activeView = "home";
-  let activeMap = "lifecycle";
   let activePractice = "cards";
   let cardIndex = 0;
   let scenarioIndex = 0;
@@ -244,32 +243,86 @@
     delivery: ["PM delivery desk", "Use six connected views to manage one release without duplicating the system of record."],
   };
 
+  const MAP_RECALL = {
+    lifecycle: "Without looking, name the seven stages in order: Plan, Code, Build, Verify, Package, Deploy, and Measure. What evidence moves from one stage to the next?",
+    structure: "Name the containment path from Microsoft Entra identity through the Azure DevOps organization, project, team, and service resources. What does each boundary contain or control?",
+    hierarchy: "Name the four levels: Epic, Feature, Requirement-level work, and Task. Which alternate names can the requirement level use?",
+    access: "Name the five access layers: Identity, Access level, Group membership, Scoped permission, and Policies and checks. Why can no single layer explain effective access?",
+    pipeline: "Name the six pipeline nodes in order: Trigger, Agent, Stages, Artifact, Environment, and Evidence. What does each contribute to a traceable deployment?",
+    delivery: "Name the six checkpoints: Plan, Engineering change, Release, Readiness, Output, and Control. Which Azure DevOps service or evidence supports each checkpoint?",
+  };
+
   function mapData(key) {
     return key === "delivery" ? CONTENT.deliveryDesk.map(([step, service, line]) => [step, service, line]) : CONTENT.visuals[key];
   }
 
   function renderMaps() {
-    const tabs = Object.entries(MAP_META).map(([key, [title]]) => `<button class="tab ${key === activeMap ? "active" : ""}" type="button" data-map="${key}">${escapeHTML(title)}</button>`).join("");
-    view.innerHTML = `${pageHead("Visual maps", "Switch between system views until you can move from the big picture to the exact resource that controls an outcome.")}
-      <div class="map-tabs" role="tablist" aria-label="Azure DevOps visual maps">${tabs}</div><div id="map-body"></div>`;
-    document.querySelectorAll("[data-map]").forEach(button => {
-      button.onclick = () => {
-        activeMap = button.dataset.map;
-        document.querySelectorAll("[data-map]").forEach(item => item.classList.toggle("active", item === button));
-        renderMapBody();
+    const entries = Object.entries(MAP_META);
+    const tabs = entries.map(([key, [title]], index) => `<button class="tab ${index === 0 ? "active" : ""}" type="button" role="tab" id="map-tab-${key}" aria-controls="map-panel-${key}" aria-selected="${index === 0}" tabindex="${index === 0 ? "0" : "-1"}" data-map="${key}">${escapeHTML(title)}</button>`).join("");
+    const panels = entries.map(([key, [title, explanation]], index) => `<section class="card map-panel" role="tabpanel" id="map-panel-${key}" aria-labelledby="map-tab-${key}" tabindex="0" ${index === 0 ? "" : "hidden"}>
+      <h3>${escapeHTML(title)}</h3><p>${escapeHTML(explanation)}</p>${renderMapBody(key)}
+      <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(MAP_RECALL[key])}</div>
+      ${key === "lifecycle" ? renderWorkflowAnalogies() : ""}</section>`).join("");
+    view.innerHTML = `${pageHead("Visual maps", "Explore how Azure DevOps work, structure, access, and delivery connect.")}
+      <div class="map-tabs" role="tablist" aria-label="Azure DevOps visual maps">${tabs}</div>${panels}`;
+    const controls = [...view.querySelectorAll('[role="tab"]')];
+    const activate = selected => {
+      controls.forEach(button => {
+        const active = button === selected;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+        button.tabIndex = active ? 0 : -1;
+        document.getElementById(button.getAttribute("aria-controls")).hidden = !active;
+      });
+      selected.focus({ preventScroll: true });
+    };
+    controls.forEach((button, index) => {
+      button.onclick = () => activate(button);
+      button.onkeydown = event => {
+        const destinations = { ArrowRight: (index + 1) % controls.length, ArrowLeft: (index + controls.length - 1) % controls.length, Home: 0, End: controls.length - 1 };
+        if (!(event.key in destinations)) return;
+        event.preventDefault();
+        activate(controls[destinations[event.key]]);
       };
     });
-    renderMapBody();
   }
 
-  function renderMapBody() {
-    const [title, explanation] = MAP_META[activeMap];
-    const nodes = mapData(activeMap).map((node, index) => {
+  function renderMapBody(key) {
+    const sequence = ["lifecycle", "pipeline", "delivery"].includes(key);
+    const nodes = mapData(key).map((node, index) => {
       const [label, name, description] = node.length === 2 ? [`Level ${index + 1}`, node[0], node[1]] : node;
-      return `<article class="flow-node"><span class="flow-index">${escapeHTML(label)}</span><h3>${escapeHTML(name)}</h3><p>${escapeHTML(description)}</p></article>`;
-    }).join("");
-    document.getElementById("map-body").innerHTML = `<section class="card"><h3>${escapeHTML(title)}</h3><p>${escapeHTML(explanation)}</p><div class="flow">${nodes}</div>
-      <div class="callout map-explanation"><strong>Recall prompt:</strong> Close your eyes and name the nodes in order. Then explain what evidence moves from one node to the next.</div></section>`;
+      const requirement = key === "hierarchy" && index === 2;
+      const marker = sequence ? `<span class="map-number" aria-hidden="true">${index + 1}</span>${node.length === 3 ? ` ${escapeHTML(label)}` : ""}` : escapeHTML(key === "access" ? `Layer ${label}` : label);
+      return `<div class="map-node"><span class="map-label">${marker}</span><h4>${escapeHTML(requirement ? "Requirement-level work" : name)}</h4>${requirement ? `<p class="map-alternate">Also called: ${escapeHTML(name)}</p>` : ""}<p>${escapeHTML(description)}</p></div>`;
+    });
+    if (sequence) {
+      return `<ol class="map-sequence map-sequence-${key}" aria-label="${escapeHTML(MAP_META[key][0])} sequence" style="--map-count:${nodes.length}">${nodes.map((node, index) => `<li>${node}${index < nodes.length - 1 ? '<span class="map-connector" aria-hidden="true"></span>' : ""}</li>`).join("")}</ol>`;
+    }
+    if (key === "structure") {
+      // Teams and service resources share the project boundary; resources are not owned by a team.
+      return `<div class="map-containment" role="group" aria-label="Microsoft Entra identity context">${nodes[0]}
+        <div class="map-boundary" role="group" aria-label="Azure DevOps organization boundary">${nodes[1]}
+          <div class="map-boundary" role="group" aria-label="Project boundary">${nodes[2]}
+            <div class="map-contained-resources">${nodes[3]}${nodes[4]}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+    if (key === "hierarchy") {
+      const branch = index => `<li>${nodes[index]}${index < nodes.length - 1 ? `<ul>${branch(index + 1)}</ul>` : ""}</li>`;
+      return `<ul class="map-hierarchy" aria-label="Parent-to-child work breakdown">${branch(0)}</ul>`;
+    }
+    return `<div class="map-access" role="group" aria-label="Combined access layers"><ul class="map-layers">${nodes.map((node, index) => `<li>${node}${index < nodes.length - 1 ? '<span class="map-layer-connector" aria-hidden="true">+</span>' : ""}</li>`).join("")}</ul><p class="map-combined"><strong>Effective access depends on the combined stack.</strong></p></div>`;
+  }
+
+  function renderWorkflowAnalogies() {
+    return `<details class="map-analogies"><summary>Workflow analogies</summary>
+      <p>These comparisons progress from simplest to most comprehensive. Start with Restaurant Order for the fastest introduction, use the House comparison for coordination and quality gates, then use Training Course as the recommended comprehensive analogy.</p>
+      ${CONTENT.workflowAnalogies.map(analogy => `<details class="map-analogy"><summary>${escapeHTML(analogy.title)}</summary><p>${escapeHTML(analogy.introduction)}</p>
+        <ol class="map-mappings">${analogy.steps.map(([heading, mapping, problem]) => `<li><h4>${escapeHTML(heading)}</h4><p>${escapeHTML(mapping)}</p>${problem ? `<p><strong>Problem solved:</strong> ${escapeHTML(problem)}</p>` : ""}</li>`).join("")}</ol>
+        <p><strong>Central lesson:</strong> ${escapeHTML(analogy.lesson)}</p><p><strong>Limitation:</strong> ${escapeHTML(analogy.limitation)}</p></details>`).join("")}
+      <p>Azure DevOps does not create the product for the team. It connects planning, source control, reviews, testing, and delivery. Qualified people still make the instructional and technical decisions.</p>
+    </details>`;
   }
 
   function renderInfographics() {
