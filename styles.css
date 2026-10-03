@@ -123,6 +123,60 @@ details summary { cursor: pointer; }
 .flow-node p { margin: 0; color: var(--muted); font-size: .9rem; }
 .flow-index { color: var(--blue); font-weight: 850; font-size: .8rem; }
 .map-explanation { margin-top: 18px; }
+/* Visual maps only: leave the shared Home flow and Practice tabs unchanged. */
+.map-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.map-tabs .tab { min-width: 0; min-height: 48px; padding: 8px; font-size: .9rem; line-height: 1.3; }
+.map-tabs .tab:focus-visible, .map-panel:focus-visible, .map-panel summary:focus-visible { outline: 3px solid var(--blue-strong); outline-offset: 3px; }
+.map-panel { container-type: inline-size; }
+.map-panel[hidden] { display: none; }
+.map-node { position: relative; min-width: 0; padding: 16px; border: 1px solid var(--line); border-top: 5px solid var(--blue); border-radius: 13px; background: var(--surface); }
+.map-node h4 { margin: 6px 0; font-size: 1.02rem; overflow-wrap: anywhere; }
+.map-node p { margin: 0; color: var(--muted); font-size: .9rem; }
+.map-node .map-alternate { margin-bottom: 8px; font-size: .83rem; }
+.map-label { color: var(--blue); font-weight: 850; font-size: .8rem; }
+.map-number { display: inline-grid; place-items: center; width: 24px; height: 24px; margin-right: 4px; border: 1px solid var(--blue); border-radius: 50%; }
+.map-sequence { display: grid; grid-template-columns: 1fr; gap: 30px; margin: 18px 0 0; padding: 0; list-style: none; }
+.map-sequence > li { position: relative; min-width: 0; }
+.map-sequence .map-node { height: 100%; }
+.map-connector { position: absolute; top: 100%; left: 24px; height: 30px; border-left: 2px solid var(--blue); }
+.map-connector::after { content: ""; position: absolute; bottom: 3px; left: -5px; width: 8px; height: 8px; border-right: 2px solid var(--blue); border-bottom: 2px solid var(--blue); transform: rotate(45deg); }
+.map-containment { border: 1px solid var(--line); padding: 12px; border-radius: 13px; background: var(--surface-2); }
+.map-boundary { margin: 12px 0 0 16px; padding: 12px; border: 1px solid var(--blue); border-radius: 13px; }
+.map-contained-resources { display: grid; gap: 12px; margin: 12px 0 0 16px; padding-left: 12px; border-left: 2px solid var(--line); }
+.map-hierarchy, .map-hierarchy ul { margin: 0; padding: 0; list-style: none; }
+.map-hierarchy ul { margin-left: 22px; padding: 18px 0 0 20px; border-left: 2px solid var(--blue); }
+.map-hierarchy li { position: relative; }
+.map-hierarchy ul > li::before { content: ""; position: absolute; top: 28px; left: -20px; width: 20px; border-top: 2px solid var(--blue); }
+.map-layers { display: grid; gap: 30px; list-style: none; padding: 0; margin: 0; }
+.map-layers > li { position: relative; }
+.map-layer-connector { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); height: 30px; line-height: 30px; color: var(--blue); font-weight: 850; }
+.map-combined { max-width: none; margin-bottom: 0; padding: 12px; border-top: 2px solid var(--blue); text-align: center; }
+.map-analogies { margin-top: 18px; border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; }
+.map-analogies > summary, .map-analogy > summary { min-height: 24px; font-weight: 750; }
+.map-analogy { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; }
+.map-mappings { padding-left: 24px; }
+.map-mappings li { margin: 16px 0; }
+.map-mappings h4 { margin-bottom: 6px; }
+.map-mappings p { margin: 6px 0; }
+/* Available panel width, not viewport width, determines when every node fits. */
+@container (min-width: 1000px) {
+  .map-sequence { grid-template-columns: repeat(var(--map-count), minmax(0, 1fr)); gap: 18px; }
+  .map-sequence .map-node { padding: 12px; }
+  .map-sequence .map-number { display: grid; margin-bottom: 6px; }
+  .map-connector { top: 45px; left: 100%; width: 18px; height: 0; border-left: 0; border-top: 2px solid var(--blue); }
+  .map-connector::after { top: -5px; bottom: auto; left: auto; right: 3px; transform: rotate(-45deg); }
+}
+@media (max-width: 980px) {
+  .map-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .map-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .map-containment, .map-boundary { padding: 8px; }
+  .map-boundary { margin-left: 8px; }
+  .map-contained-resources { margin-left: 8px; padding-left: 8px; }
+  .map-hierarchy ul { margin-left: 8px; padding-left: 12px; }
+  .map-hierarchy ul > li::before { left: -12px; width: 12px; }
+}
 .infographic-card { overflow: hidden; }
 .infographic-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .infographic-heading h3 { margin-top: 3px; }
