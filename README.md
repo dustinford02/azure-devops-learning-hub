@@ -1,25 +1,27 @@
 # Azure DevOps Learning Hub
 
-Local study page built October 2, 2026.
+A local, no-login study page for a project manager coordinating one fraud/scam-detection release in one Azure DevOps project.
 
 ## Open it
 
 Open `index.html` in a browser. There is no PIN and no sign-in.
 
-## Inside the page
+## Expedited path
 
-- Home: links to the Canva mind map, Canva training deck, Gamma glossary, and Drive note
-- Map: bakery stations aligned to Azure DevOps
-- Glossary: twenty core terms
-- Cards: retrieval practice, with a tomorrow marker
-- Scenarios: ten prompts; say the answer, then compare
-- Palace: six-stop bakery walk
+The default screen is a ten-stop route that can be completed over a few sittings. Every stop has a short explanation, one PM action, one check question, and links to the relevant Microsoft documentation.
 
-## External pieces
+It covers:
 
-- Mind map: https://canva.link/az2vpbjhpqmdiiz
-- Training deck: https://canva.link/cyfswkfnwk67xu9
-- Gamma glossary: https://gamma.app/generations/CLHHMnYlDcwdNuguJzfWY
-- Drive note: https://docs.google.com/document/d/1RB5kOPvn4yBdlvqE5ix9dRyikzBM7oCtYyhrg0LTk5U
+- Azure DevOps and its Boards, Repos, Pipelines, Test Plans, and Artifacts services
+- Stakeholder access, sign-up, and connecting to a project
+- Project and team setup, administrator scope, billing, security, and default permissions
+- Backlogs, sprints, boards, dependencies, and delivery status
+- Repos, pull requests, cloning, SSH, code search, and Git permissions at PM depth
+- First and multi-branch pipelines, YAML, variables, test readiness, and release artifacts
+- Preferences, notifications, favorites, and available interfaces
+- Connection, permission, and pipeline troubleshooting
+- A one-line pointer to migration, which is otherwise out of scope
 
-The 8:00 AM Central practice automation runs in Grok, not in this page.
+The fraud-release delivery desk, glossary, flashcards, and PM scenarios provide quick review after the ordered path. Progress and the flashcard review marker are stored only in the browser’s local storage.
+
+Scope follows Microsoft’s [Azure DevOps get-started documentation](https://learn.microsoft.com/en-us/azure/devops/get-started/?view=azure-devops).
