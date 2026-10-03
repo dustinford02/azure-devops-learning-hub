@@ -5,49 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Azure DevOps Learning Hub</title>
   <style>
-    :root { --cream:#f6efe4; --paper:#fffaf3; --ink:#2b2118; --brown:#6b4423; --orange:#c46a2d; --line:#e4d5c3; --ok:#2f6b4f; }
+    :root { --cream:#f6efe4; --paper:#fffaf3; --ink:#2b2118; --brown:#6b4423; --orange:#c46a2d; --line:#e4d5c3; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: Georgia, "Iowan Old Style", serif; background:var(--cream); color:var(--ink); }
     header, main { max-width: 980px; margin: 0 auto; padding: 20px; }
     h1,h2,h3 { font-weight: 600; }
     nav { display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 18px; }
-    button, input, textarea { font: inherit; border-radius: 10px; border: 1px solid var(--brown); padding: 10px 12px; }
+    button, textarea { font: inherit; border-radius: 10px; border: 1px solid var(--brown); padding: 10px 12px; }
     button { background: var(--brown); color: white; cursor: pointer; }
     button.ghost, button.active { background: transparent; color: var(--brown); }
     button.active { outline: 2px solid var(--orange); }
-    .card, .gate, .node { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 10px 0; }
+    .card, .node { background:#fffaf3; border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 10px 0; }
     .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
     .hidden { display:none; }
     a { color: var(--orange); }
-    .warn { font-size: .92rem; color:#6a5344; }
     .front { font-size: 1.4rem; min-height: 90px; }
     .answer { background:#f3e2cf; border-radius: 12px; padding: 12px; }
-    .station { cursor:pointer; }
-    .station:focus, .station:hover { outline: 2px solid var(--orange); }
   </style>
 </head>
 <body>
   <header>
     <h1>Azure DevOps Learning Hub</h1>
-    <p>Bakery map, glossary, flashcards, scenario practice, and a memory-palace walk. Everything from this study session, in one local page.</p>
+    <p>Bakery map, glossary, flashcards, scenario practice, and a memory-palace walk. Open the page and start.</p>
   </header>
   <main>
-    <section id="gate" class="gate">
-      <h2>Local sign-in</h2>
-      <p class="warn">The PIN stays in this browser only. It keeps the page from opening by accident. It is not real security: anyone with the file can read the source.</p>
-      <form id="login-form">
-        <label>PIN<br /><input id="pin" type="password" minlength="4" required autocomplete="current-password" /></label>
-        <p><button type="submit" id="login-btn">Enter</button></p>
-        <p id="login-msg"></p>
-      </form>
-      <p id="reset-row" class="hidden"><button class="ghost" id="reset-pin" type="button">Forgot the PIN? Reset it</button> <span class="warn">Clears the saved PIN in this browser. No study progress is lost.</span></p>
-      <p id="reset-confirm" class="hidden">Clear the saved PIN? You will choose a new one on the next entry. <button id="reset-yes" type="button">Clear it</button> <button class="ghost" id="reset-no" type="button">Keep it</button></p>
-    </section>
-    <section id="app" class="hidden">
-      <p>Signed in on this browser. <button class="ghost" id="logout" type="button">Lock</button></p>
-      <nav id="nav"></nav>
-      <section id="view"></section>
-    </section>
+    <nav id="nav"></nav>
+    <section id="view"></section>
   </main>
   <script>
     const LINKS = {
@@ -163,47 +146,7 @@
       b.onclick = () => show(name);
       nav.appendChild(b);
     });
-    const KEY = "ado-hub-pin";
-    const gate = document.getElementById("gate");
-    const app = document.getElementById("app");
-    const form = document.getElementById("login-form");
-    const pin = document.getElementById("pin");
-    const loginBtn = document.getElementById("login-btn");
-    const loginMsg = document.getElementById("login-msg");
-    const resetRow = document.getElementById("reset-row");
-    const resetConfirm = document.getElementById("reset-confirm");
-    function syncGate() {
-      const saved = localStorage.getItem(KEY);
-      loginBtn.textContent = saved ? "Enter" : "Set PIN and enter";
-      pin.autocomplete = saved ? "current-password" : "new-password";
-      resetRow.classList.toggle("hidden", !saved);
-      resetConfirm.classList.add("hidden");
-    }
-    syncGate();
-    function openApp() { gate.classList.add("hidden"); app.classList.remove("hidden"); show("Home"); }
-    if (sessionStorage.getItem("ado-hub-open") === "1") openApp();
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const saved = localStorage.getItem(KEY);
-      if (!saved) { localStorage.setItem(KEY, pin.value); sessionStorage.setItem("ado-hub-open", "1"); openApp(); return; }
-      if (pin.value === saved) { sessionStorage.setItem("ado-hub-open", "1"); openApp(); }
-      else loginMsg.textContent = "That PIN does not match the one saved in this browser.";
-    });
-    document.getElementById("reset-pin").onclick = () => {
-      resetRow.classList.add("hidden");
-      resetConfirm.classList.remove("hidden");
-      loginMsg.textContent = "";
-    };
-    document.getElementById("reset-no").onclick = () => syncGate();
-    document.getElementById("reset-yes").onclick = () => {
-      localStorage.removeItem(KEY);
-      sessionStorage.removeItem("ado-hub-open");
-      pin.value = "";
-      syncGate();
-      loginMsg.textContent = "PIN cleared. Type a new one and it will be saved.";
-      pin.focus();
-    };
-    document.getElementById("logout").onclick = () => { sessionStorage.removeItem("ado-hub-open"); location.reload(); };
+    show("Home");
   </script>
 </body>
 </html>
