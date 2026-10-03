@@ -1,152 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive, installable Azure DevOps learning system for complete beginners.">
+  <meta name="theme-color" content="#0f6cbd">
+  <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
   <title>Azure DevOps Learning Hub</title>
-  <style>
-    :root { --cream:#f6efe4; --paper:#fffaf3; --ink:#2b2118; --brown:#6b4423; --orange:#c46a2d; --line:#e4d5c3; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: Georgia, "Iowan Old Style", serif; background:var(--cream); color:var(--ink); }
-    header, main { max-width: 980px; margin: 0 auto; padding: 20px; }
-    h1,h2,h3 { font-weight: 600; }
-    nav { display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 18px; }
-    button, textarea { font: inherit; border-radius: 10px; border: 1px solid var(--brown); padding: 10px 12px; }
-    button { background: var(--brown); color: white; cursor: pointer; }
-    button.ghost, button.active { background: transparent; color: var(--brown); }
-    button.active { outline: 2px solid var(--orange); }
-    .card, .node { background:#fffaf3; border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 10px 0; }
-    .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-    .hidden { display:none; }
-    a { color: var(--orange); }
-    .front { font-size: 1.4rem; min-height: 90px; }
-    .answer { background:#f3e2cf; border-radius: 12px; padding: 12px; }
-  </style>
 </head>
 <body>
-  <header>
-    <h1>Azure DevOps Learning Hub</h1>
-    <p>Bakery map, glossary, flashcards, scenario practice, and a memory-palace walk. Open the page and start.</p>
-  </header>
-  <main>
-    <nav id="nav"></nav>
-    <section id="view"></section>
-  </main>
-  <script>
-    const LINKS = {
-      map: "https://canva.link/az2vpbjhpqmdiiz",
-      deck: "https://canva.link/cyfswkfnwk67xu9",
-      glossary: "https://gamma.app/generations/CLHHMnYlDcwdNuguJzfWY",
-      backlog: "https://docs.google.com/document/d/1RB5kOPvn4yBdlvqE5ix9dRyikzBM7oCtYyhrg0LTk5U"
-    };
-    const TERMS = [
-      ["ADO", "Azure DevOps", "Microsoft's system for planning, storing, building, testing, and shipping software. It is the bakery's operating system, not the rented building."],
-      ["Azure", "Azure cloud", "The rented computers, storage, and databases. Azure DevOps can deploy onto Azure, but they are different products."],
-      ["Boards", "Azure Boards", "The order list. Backlog, sprints, bugs, and change requests live here. A project manager would recognize this first."],
-      ["Repos", "Azure Repos", "The recipe book. Git stores every version so a bad batch can be rolled back."],
-      ["Pipelines", "Azure Pipelines", "The oven. A change goes in, it builds and tests, and it either passes or fails."],
-      ["Test Plans", "Azure Test Plans", "The health inspector. Formal cases link a requirement to a test and a result."],
-      ["Artifacts", "Azure Artifacts", "Finished cookies on the shelf. Packages such as NuGet or npm, stored and ready to deploy."],
-      ["CI", "Continuous Integration", "Every change is built and tested as soon as it is pushed. A burnt batch is caught at the oven, not at the counter."],
-      ["CD", "Continuous Delivery or Deployment", "Delivery means a release is always ready and a person approves the handoff. Deployment ships it with no human gate."],
-      ["PR", "Pull request", "A proposed new recipe. Review and checks happen before it enters the main book."],
-      ["YAML", "YAML Ain't Markup Language", "The plain-text recipe card that tells a pipeline what to do."],
-      ["Entra ID", "Microsoft Entra ID", "The company login system, formerly Azure Active Directory. One identity across DevOps and Azure."],
-      ["SSO", "Single sign-on", "Log in once with the company account. No separate bakery key."],
-      ["RBAC", "Role-based access control", "The cashier does not enter the kitchen. Access follows the role, not a one-off exception."],
-      ["PAT", "Personal access token", "A revocable password for a script. Scope it tight and retire it when the job is done."],
-      ["MFA", "Multi-factor authentication", "Password plus a second check, such as a phone code."],
-      ["SLA", "Service level agreement", "A written promise about uptime or response time. This is why government buyers ask about it."],
-      ["TFS", "Team Foundation Server", "The old on-premises ancestor of Azure DevOps. You will still hear the name."],
-      ["VSTS", "Visual Studio Team Services", "The 2015 to 2018 name for Azure DevOps."],
-      ["AAD", "Azure Active Directory", "The old name for Entra ID. Same door, older sign."]
-    ];
-    const SCENARIOS = [
-      ["A colleague asks what Azure DevOps is.", "It is the system that runs the software factory: plan the work, keep the code, build and test it, and store the finished package. Azure itself is the cloud you rent. DevOps is how the work moves."],
-      ["Someone says the pipeline failed. What do you say?", "The oven rejected the batch. A pipeline builds and tests the change automatically. A failure means it did not pass the gate, so it should not ship until the cause is fixed and the run is green."],
-      ["Why would a defense contractor care?", "Every change is tracked, reviewed, and tied to a result. That is configuration management with an audit trail, plus company login and role-based access through Entra ID."],
-      ["What is a pull request, in plain language?", "It is a proposed change to the recipe book. Someone reviews it, checks run, and only then does it become the current recipe."],
-      ["Boards or Repos: which one is the backlog?", "Boards. Repos is the recipe book, the source code. Boards is the order list."],
-      ["Continuous delivery or continuous deployment: what is the difference?", "Delivery means every batch that passes the oven is boxed and waiting at the back door, and a person decides when it goes out front. Deployment means it goes straight to the counter with no human gate. Same oven, different last step."],
-      ["A contractor needs access to one project only. How do you set that up?", "Through the company login, not a new bakery key. Entra ID carries the identity and the project role carries the permission, so you grant the lowest role that does the job on that one project. That is a counter key, not a master key."],
-      ["What is a build agent?", "The baker who actually does the work. The pipeline is the recipe card; the agent is the hands and the oven running the steps. Microsoft-hosted agents are rented kitchen time, cleaned between batches. Self-hosted agents are your own kitchen, which you maintain but fully control."],
-      ["A script needs to read the repo overnight. What do you give it?", "A personal access token scoped to read that one repo, with a short expiry. It is a spare key cut for one door. The risk is that it acts as you, so it does whatever its scope allows if it leaks. Revoke it when the job is done."],
-      ["How is a sprint different from a milestone on the program schedule?", "A sprint is a fixed short batch window, usually two weeks, where the team commits to a set of orders and finishes them. A milestone is a promised date you owe the customer. Boards tracks the sprint; the program schedule still owns the milestone."]
-    ];
-    const PALACE = [
-      ["Front counter", "Boards", "Orders are written here. That is the backlog: what to bake, special requests, and tomorrow's plan."],
-      ["Recipe shelf", "Repos", "Every version of a recipe is kept. A bad batch sends you back to the last good card."],
-      ["Oven", "Pipelines", "Ingredients go in. Cookies come out right, or they burn. No one tastes after the fact and calls that a test."],
-      ["Inspector's clipboard", "Test Plans", "The formal check. A requirement has a test, and a test has a result."],
-      ["Cooling rack", "Artifacts", "Finished cookies wait here, packaged and ready to hand out."],
-      ["Key ring by the door", "Entra ID", "One owner, one set of keys. The cashier key does not open the kitchen."]
-    ];
-    const VIEWS = ["Home", "Map", "Glossary", "Cards", "Scenarios", "Palace"];
-    const view = document.getElementById("view");
-    const nav = document.getElementById("nav");
-    let cardIndex = 0;
-    let scenarioIndex = 0;
-    let palaceIndex = 0;
-
-    function show(name) {
-      [...nav.children].forEach(b => b.classList.toggle("active", b.dataset.view === name));
-      if (name === "Home") view.innerHTML = home();
-      if (name === "Map") view.innerHTML = map();
-      if (name === "Glossary") view.innerHTML = glossary();
-      if (name === "Cards") renderCard();
-      if (name === "Scenarios") renderScenario();
-      if (name === "Palace") renderPalace();
-    }
-    function home() {
-      return `<div class="grid">
-        <article class="card"><h3>Mind map</h3><p>Bakery stations mapped to the services.</p><p><a href="${LINKS.map}" target="_blank" rel="noopener">Open Canva mind map</a></p></article>
-        <article class="card"><h3>Training deck</h3><p>The longer walkthrough.</p><p><a href="${LINKS.deck}" target="_blank" rel="noopener">Open Canva presentation</a></p></article>
-        <article class="card"><h3>Gamma glossary</h3><p>The generated long document.</p><p><a href="${LINKS.glossary}" target="_blank" rel="noopener">Open Gamma glossary</a></p></article>
-        <article class="card"><h3>Drive backlog</h3><p>Original later-list note.</p><p><a href="${LINKS.backlog}" target="_blank" rel="noopener">Open Drive note</a></p></article>
+  <a class="skip-link" href="#view">Skip to learning content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div>
+        <p class="eyebrow">Interactive beginner learning system</p>
+        <h1>Azure DevOps Learning Hub</h1>
+        <p class="header-copy">See how the platform fits together, learn each service in context, practice the decisions, and track what you understand.</p>
       </div>
-      <article class="card"><h3>Daily practice</h3><p>A Grok automation is scheduled for 8:00 AM Central, starting October 3, 2026. It is not inside this page. Use Cards and Scenarios here for the same kind of recall.</p></article>`;
-    }
-    function map() {
-      const nodes = [
-        ["Order list", "Boards", "Backlog, sprints, bugs."],
-        ["Recipe book", "Repos", "Every version, with rollback."],
-        ["Oven", "Pipelines", "Build and test, pass or fail."],
-        ["Health inspector", "Test Plans", "Requirement, test, result."],
-        ["Shelf", "Artifacts", "Packages ready to deploy."],
-        ["Logbook", "Microsoft identity", "Entra ID, SSO, RBAC."]
-      ].map(([a,b,c]) => `<article class="node"><h3>${a} \u2192 ${b}</h3><p>${c}</p></article>`).join("");
-      return `<article class="card"><strong>The bakery = Azure DevOps.</strong> Azure is the rented building. DevOps is how the bakery runs.</article><div class="grid">${nodes}</div>`;
-    }
-    function glossary() {
-      return TERMS.map(([a,b,c]) => `<details class="card"><summary><strong>${a}</strong> \u2014 ${b}</summary><p>${c}</p></details>`).join("") + `<p><a href="${LINKS.glossary}" target="_blank" rel="noopener">Full Gamma glossary</a></p>`;
-    }
-    function renderCard() {
-      const [a,b,c] = TERMS[cardIndex];
-      const due = Number(localStorage.getItem("ado-card-due") || 0);
-      view.innerHTML = `<article class="card"><p>Card ${cardIndex + 1} of ${TERMS.length}. Next review marker: ${due ? new Date(due).toLocaleString() : "not set"}.</p><p class="front">${a}</p><div id="card-answer" class="hidden answer"><p><strong>${b}</strong></p><p>${c}</p></div><p><button id="reveal" type="button">Show answer</button> <button id="again" class="ghost" type="button">Again tomorrow</button> <button id="next-card" class="ghost" type="button">Next</button></p></article>`;
-      document.getElementById("reveal").onclick = () => document.getElementById("card-answer").classList.remove("hidden");
-      document.getElementById("again").onclick = () => { localStorage.setItem("ado-card-due", String(Date.now() + 86400000)); cardIndex = (cardIndex + 1) % TERMS.length; renderCard(); };
-      document.getElementById("next-card").onclick = () => { cardIndex = (cardIndex + 1) % TERMS.length; renderCard(); };
-    }
-    function renderScenario() {
-      const [q,a] = SCENARIOS[scenarioIndex];
-      view.innerHTML = `<article class="card"><p>Scenario ${scenarioIndex + 1} of ${SCENARIOS.length}</p><h3>${q}</h3><textarea id="say" rows="4" style="width:100%" placeholder="Say it in your own words"></textarea><p><button id="show-say" type="button">Compare</button> <button id="next-say" class="ghost" type="button">Next</button></p><div id="model" class="hidden answer"><p>${a}</p></div></article>`;
-      document.getElementById("show-say").onclick = () => document.getElementById("model").classList.remove("hidden");
-      document.getElementById("next-say").onclick = () => { scenarioIndex = (scenarioIndex + 1) % SCENARIOS.length; renderScenario(); };
-    }
-    function renderPalace() {
-      const [place, service, line] = PALACE[palaceIndex];
-      view.innerHTML = `<article class="card"><p>Stop ${palaceIndex + 1} of ${PALACE.length}. Walk in order.</p><h3>${place}</h3><p class="front">${service}</p><p>${line}</p><p><button id="prev-palace" class="ghost" type="button">Back</button> <button id="next-palace" type="button">Next stop</button></p></article>`;
-      document.getElementById("prev-palace").onclick = () => { palaceIndex = (palaceIndex + PALACE.length - 1) % PALACE.length; renderPalace(); };
-      document.getElementById("next-palace").onclick = () => { palaceIndex = (palaceIndex + 1) % PALACE.length; renderPalace(); };
-    }
-    VIEWS.forEach(name => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "ghost"; b.dataset.view = name; b.textContent = name;
-      b.onclick = () => show(name);
-      nav.appendChild(b);
-    });
-    show("Home");
-  </script>
+      <div class="header-actions" aria-label="Application controls">
+        <span id="network-state" class="status-pill" role="status">Checking connection</span>
+        <button id="theme-toggle" class="button secondary" type="button" aria-label="Change color theme">Theme</button>
+        <button id="install-app" class="button secondary" type="button" hidden>Install app</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <nav id="nav" aria-label="Learning hub sections"></nav>
+      <div class="sidebar-note">
+        <strong>Private progress</strong>
+        <span>Completion and review dates stay in this browser.</span>
+      </div>
+    </aside>
+    <main id="main-content">
+      <section id="view" tabindex="-1" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Learning content is synthesized from official Microsoft documentation. The Microsoft Learn catalog remains the authoritative training index.</p>
+  </footer>
+
+  <script src="content.js" defer></script>
+  <script src="catalog-snapshot.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
