@@ -4,9 +4,7 @@ Local study page built October 2, 2026.
 
 ## Open it
 
-Open `index.html` in a browser. Set a PIN on the first visit. The PIN stays in that browser only and is not real security.
-
-If you forget the PIN, the sign-in screen has a reset control. It clears the saved PIN so you can set a new one. Nothing else is stored, so no study progress is lost.
+Open `index.html` in a browser. There is no PIN and no sign-in.
 
 ## Inside the page
 
