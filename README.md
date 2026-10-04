@@ -32,20 +32,6 @@ The application uses four complementary modes:
 3. **Recall:** Use flashcards and knowledge checks.
 4. **Apply:** Respond to delivery scenarios and compare the response with a suggested answer.
 
-
-## Retain: successive relearning
-
-The Retain view is the retrieval scheduler. It is not a second app.
-
-- The learner must produce an answer before the reference is shown.
-- Glossary items rotate the cue: meaning-from-term, then term-from-meaning.
-- Again stays in a 10-minute relearning step. Good or Easy graduates the item.
-- Graduated intervals use published FSRS-4.5 defaults and a selectable retention target (80–97%, default 90%). The target is predicted retrievability at the next review, not a measured retention percentage.
-- Due items are interleaved by topic. New items are capped at five per session.
-- State and the review log stay in this browser under `ado-retain-v1`. Export writes that log to JSON. Population weights are not optimized to the learner.
-
-Open it at <https://dustinford02.github.io/azure-devops-learning-hub/#retain> after the Pages deploy finishes.
-
 ## Microsoft sources
 
 The guided content and catalog entries point to official Microsoft material, including:
@@ -79,7 +65,6 @@ The included GitHub Actions workflow deploys the static application after every 
 - `catalog-snapshot.js`: Bundled Microsoft Learn catalog metadata for offline use.
 - `DevOps_Identity_and_Governance_Map.png`: Full-resolution identity and governance infographic.
 - `app.js`: Navigation, filtering, progress tracking, practice interactions, and installation support.
-- `retain.js`: Successive relearning queue, variable cues, and FSRS-4.5 scheduling.
 - `sw.js`: Offline application-shell cache.
 - `manifest.webmanifest` and `icon.svg`: Install metadata and application icon.
 
