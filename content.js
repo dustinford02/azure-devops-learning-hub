@@ -5,7 +5,7 @@ window.ADO_CONTENT = {
       "place": "Program brief",
       "title": "Know the delivery system",
       "lesson": "<p><strong>Azure DevOps</strong> is a suite for planning, coding, building, testing, and packaging software; it is separate from the Azure cloud. In the Fraud Detection project, <strong>Boards</strong> holds the backlog, sprint, and reported dependency; <strong>Repos</strong> holds engineering’s work; <strong>Pipelines</strong> moves the release; <strong>Test Plans</strong> records the checks before stakeholder review; and <strong>Artifacts</strong> stores the package the release produces.</p><p><strong>Stakeholder</strong> access is a free, limited access level suited to people who mainly view and update work items. It is not a universal read-only role: features such as private-project Repos and Test Plans require higher access or licensing.</p>",
-      "action": "Open the Fraud Detection project, identify which of the five service icons are enabled, and state what each contributes to this release.",
+      "action": "If you already have access to an Azure DevOps project, open it and note which of the five service icons are enabled. If you do not have access yet, use the Visual maps instead. Either way, state what each service contributes to the Fraud Detection release.",
       "question": "Which service holds a sprint backlog, and which service holds source code?",
       "answer": "Boards holds the sprint backlog. Repos holds source code.",
       "links": [
@@ -62,7 +62,7 @@ window.ADO_CONTENT = {
     {
       "place": "Access review",
       "title": "Understand access, permissions, and billing",
-      "lesson": "<p><strong>Access levels</strong> decide which product features a person can use; <strong>permissions</strong> decide what that person can do in a specific scope. Readers can view a project, Contributors can change work and code, Project Administrators can configure one project, Build Administrators manage build resources, and Collection Administrators have organization-wide power. An explicit <strong>Deny</strong> usually blocks an inherited Allow.</p><p>Billing is attached to the organization’s Azure subscription and covers paid user access, parallel pipeline jobs, and services such as Artifacts storage. PMs should know the billing owner and request the least access that gets the work done.</p>",
+      "lesson": "<p><strong>Access levels</strong> decide which product features a person can use; <strong>permissions</strong> decide what that person can do in a specific scope. Readers can view a project, Contributors can change work and code, Project Administrators can configure one project, Build Administrators manage build resources, and Collection Administrators have organization-wide power. When Allow and Deny meet at the same scope, <strong>Deny</strong> wins. An explicit setting on a child object, such as one repo or area path, replaces what that identity inherits from the parent.</p><p>Billing is attached to the organization’s Azure subscription and covers paid user access, parallel pipeline jobs, and services such as Artifacts storage. PMs should know the billing owner and request the least access that gets the work done.</p>",
       "action": "For the PM, engineer, stakeholder reviewer, and outside fraud specialist, write the minimum access level or group each needs. Distinguish who can change the plan from who can only read it.",
       "question": "A user is in Contributors but still cannot push to a repo. What should you inspect?",
       "answer": "Their access level, repo or branch permissions, inherited group membership, and any explicit Deny.",
@@ -192,8 +192,8 @@ window.ADO_CONTENT = {
       "answer": "Connection/access, permissions, or pipelines, then collect the identifiers and exact error.",
       "links": [
         [
-          "Troubleshoot connection and access",
-          "https://learn.microsoft.com/en-us/azure/devops/organizations/projects/tf31002-unable-connect-tfs?view=azure-devops"
+          "Troubleshoot connecting to a project",
+          "https://learn.microsoft.com/en-us/azure/devops/user-guide/troubleshoot-connection?view=azure-devops"
         ],
         [
           "Troubleshoot permissions",
@@ -300,17 +300,17 @@ window.ADO_CONTENT = {
     [
       "CD",
       "Continuous Delivery or Deployment",
-      "Delivery keeps a release ready for approval; deployment can ship automatically."
+      "Continuous delivery builds, tests, and deploys every passing change through environments such as test and production; approvals and checks can gate each stage. Continuous deployment removes the manual approval, so a passing change reaches production automatically."
     ],
     [
       "PR",
       "Pull request",
-      "A proposed code change. Review and automated checks happen before it joins the main branch."
+      "A proposed code change that teammates review before it merges into the main branch. Branch policies can require reviewers, a linked work item, and a passing build."
     ],
     [
       "YAML",
-      "YAML Ain't Markup Language",
-      "The plain-text format commonly used to define pipeline steps and settings."
+      "Pipeline definition format",
+      "The plain-text format used to describe pipeline steps and settings in a file such as azure-pipelines.yml. The name is a recursive acronym (YAML is not a markup language)."
     ],
     [
       "Entra ID",
@@ -517,11 +517,11 @@ window.ADO_CONTENT = {
       "title": "Restaurant Order",
       "introduction": "The fastest introductory explanation: a customer orders a meal; the restaurant records, prepares, checks, and delivers it.",
       "steps": [
-        ["Record the order — Azure Boards", "The server records what the customer wants. Boards records requested work, tasks, defects, and progress.", "One place shows what must be done and who is responsible."],
-        ["Control the recipe — Azure Repos", "The kitchen uses an approved recipe and retains previous versions. Repos manages files and code with their revision history.", "Team members can identify the current version."],
-        ["Prepare the meal — Azure Pipelines", "An established preparation sequence represents Pipelines automating repeatable build, test, and deployment processes.", "Important steps are less likely to be skipped or performed differently each time."],
-        ["Check before service — Azure Test Plans", "The kitchen checks completeness and preparation. Test Plans supports manual and exploratory testing before delivery.", "Problems can be identified before the product reaches the customer."],
-        ["Deliver the meal — connected Azure DevOps services", "The delivered order is traceable to the original request. Azure DevOps connects planning, development, testing, and delivery within an integrated toolset."]
+        ["Record the order: Azure Boards", "The server records what the customer wants. Boards records requested work, tasks, defects, and progress.", "One place shows what must be done and who is responsible."],
+        ["Control the recipe: Azure Repos", "The kitchen uses an approved recipe and retains previous versions. Repos manages files and code with their revision history.", "Team members can identify the current version."],
+        ["Prepare the meal: Azure Pipelines", "An established preparation sequence represents Pipelines automating repeatable build, test, and deployment processes.", "Important steps are less likely to be skipped or performed differently each time."],
+        ["Check before service: Azure Test Plans", "The kitchen checks completeness and preparation. Test Plans supports manual and exploratory testing before delivery.", "Problems can be identified before the product reaches the customer."],
+        ["Deliver the meal: connected Azure DevOps services", "The delivered order is traceable to the original request. Azure DevOps connects planning, development, testing, and delivery within an integrated toolset."]
       ],
       "lesson": "Azure DevOps helps a team track a request from the initial idea through creation, checking, and delivery.",
       "limitation": "Software development is rarely as linear as preparing one meal. Requirements may change, teams may work on several versions simultaneously, and a product may undergo repeated testing and revision."
@@ -530,12 +530,12 @@ window.ADO_CONTENT = {
       "title": "Building and Inspecting a House",
       "introduction": "The stronger coordination and quality-gate comparison: a construction company divides house plans into tasks, manages revisions, inspects the work, and turns over the finished house.",
       "steps": [
-        ["Define the work — Azure Boards", "Divide construction into foundation, framing, plumbing, and electrical tasks. Boards supports planning and work tracking through backlogs and configurable boards.", "An undefined objective becomes visible, manageable assignments."],
-        ["Control the plans — Azure Repos", "Architects and engineers update drawings while keeping approved-change history. Repos provides managed repositories, file history, collaboration, and review processes.", "The team can identify and review changes and avoid conflicting plans."],
-        ["Coordinate construction — Azure Pipelines", "Foundation precedes framing; inspection may gate later work. Pipelines organizes automated stages and tasks for building, testing, and deploying a product.", "Work follows a controlled sequence with less dependence on manual coordination."],
-        ["Inspect the work — Azure Test Plans", "Inspectors check completed work against requirements. Test Plans supports planned manual and exploratory testing.", "The team can document tests, results, and defects before final delivery."],
-        ["Manage standard materials — Azure Artifacts", "Approved components, templates, and prefabricated materials represent reusable packages. Artifacts lets teams create, host, share, and integrate packages into delivery pipelines.", "Teams reuse controlled components instead of recreating them for every project."],
-        ["Turn over the house — connected Azure DevOps services", "Release follows the defined work and inspections. Together, Azure DevOps services support planning, building, testing, and deploying products."]
+        ["Define the work: Azure Boards", "Divide construction into foundation, framing, plumbing, and electrical tasks. Boards supports planning and work tracking through backlogs and configurable boards.", "An undefined objective becomes visible, manageable assignments."],
+        ["Control the plans: Azure Repos", "Architects and engineers update drawings while keeping approved-change history. Repos provides managed repositories, file history, collaboration, and review processes.", "The team can identify and review changes and avoid conflicting plans."],
+        ["Coordinate construction: Azure Pipelines", "Foundation precedes framing; inspection may gate later work. Pipelines organizes automated stages and tasks for building, testing, and deploying a product.", "Work follows a controlled sequence with less dependence on manual coordination."],
+        ["Inspect the work: Azure Test Plans", "Inspectors check completed work against requirements. Test Plans supports planned manual and exploratory testing.", "The team can document tests, results, and defects before final delivery."],
+        ["Manage standard materials: Azure Artifacts", "Approved components, templates, and prefabricated materials represent reusable packages. Artifacts lets teams create, host, share, and integrate packages into delivery pipelines.", "Teams reuse controlled components instead of recreating them for every project."],
+        ["Turn over the house: connected Azure DevOps services", "Release follows the defined work and inspections. Together, Azure DevOps services support planning, building, testing, and deploying products."]
       ],
       "lesson": "Azure DevOps functions like a coordinated construction-management system that connects plans, tasks, controlled changes, inspections, reusable components, and final delivery.",
       "limitation": "Physical construction usually cannot be copied or redeployed as easily as software. Azure DevOps can automate software delivery in ways that have no direct construction equivalent."
@@ -544,14 +544,14 @@ window.ADO_CONTENT = {
       "title": "Developing and Publishing a Training Course",
       "introduction": "The recommended comprehensive analogy: an instructional-design team develops a training requirement into content, reviews and tests it, publishes it, and improves later versions. It connects the delivery system to an instructional designer’s existing experience.",
       "steps": [
-        ["Translate the requirement — Azure Boards", "Divide the requirement into lessons, objectives, media tasks, assessments, reviews, and publishing activities. Boards represents this work as trackable items and shows progress.", "Requirements connect to specific work instead of being buried in emails or meeting notes."],
-        ["Control source content — Azure Repos", "Designers, developers, and reviewers work on scripts, course files, configurations, and supporting materials. Repos stores controlled files and supports review before incorporating changes.", "Revision history helps establish which material is authoritative."],
-        ["Review proposed revisions — pull requests in Azure Repos", "A developer proposes a revision for another team member to review. A pull request is a formal request to review and approve proposed changes before incorporating them into the main version.", "Unreviewed changes do not need to enter the authoritative product automatically."],
-        ["Prepare delivery automatically — Azure Pipelines", "When approved material changes, automation checks files, runs required validation, and prepares the deliverable. Pipelines supports continuous integration and continuous delivery (CI/CD) across languages, platforms, and environments. CI/CD means automatically integrating changes, checking them, and preparing or delivering the updated product through a repeatable process.", "Teams reduce repetitive manual work and apply the same quality steps consistently."],
-        ["Test the learning product — Azure Test Plans", "Reviewers test navigation, content, assessments, and expected learner behavior. Test Plans supports manual and exploratory testing before release.", "Testing becomes documented work instead of an informal final check."],
-        ["Store reusable assets — Azure Artifacts", "Retain approved templates, components, or shared dependencies for reuse. Artifacts hosts and shares packages that Pipelines can also use.", "Teams can reuse approved components consistently."],
-        ["Publish and monitor — connected Azure DevOps services", "Deliver the approved course with traceability from the original requirement through development and testing. Azure DevOps integrates planning, building, testing, and deployment tools.", "The organization can see what was requested, what changed, how it was tested, and what was delivered."],
-        ["Improve again — return to Azure Boards", "Learner feedback and identified defects become new work items in Boards and move through the development process again.", "Improvements are captured and managed rather than lost after release."]
+        ["Translate the requirement: Azure Boards", "Divide the requirement into lessons, objectives, media tasks, assessments, reviews, and publishing activities. Boards represents this work as trackable items and shows progress.", "Requirements connect to specific work instead of being buried in emails or meeting notes."],
+        ["Control source content: Azure Repos", "Designers, developers, and reviewers work on scripts, course files, configurations, and supporting materials. Repos stores controlled files and supports review before incorporating changes.", "Revision history helps establish which material is authoritative."],
+        ["Review proposed revisions: pull requests in Azure Repos", "A developer proposes a revision for another team member to review. A pull request is a formal request to review and approve proposed changes before incorporating them into the main version.", "Unreviewed changes do not need to enter the authoritative product automatically."],
+        ["Prepare delivery automatically: Azure Pipelines", "When approved material changes, automation checks files, runs required validation, and prepares the deliverable. Pipelines supports continuous integration and continuous delivery (CI/CD) across languages, platforms, and environments. CI/CD means automatically integrating changes, checking them, and preparing or delivering the updated product through a repeatable process.", "Teams reduce repetitive manual work and apply the same quality steps consistently."],
+        ["Test the learning product: Azure Test Plans", "Reviewers test navigation, content, assessments, and expected learner behavior. Test Plans supports manual and exploratory testing before release.", "Testing becomes documented work instead of an informal final check."],
+        ["Store reusable assets: Azure Artifacts", "Retain approved templates, components, or shared dependencies for reuse. Artifacts hosts and shares packages that Pipelines can also use.", "Teams can reuse approved components consistently."],
+        ["Publish and monitor: connected Azure DevOps services", "Deliver the approved course with traceability from the original requirement through development and testing. Azure DevOps integrates planning, building, testing, and deployment tools.", "The organization can see what was requested, what changed, how it was tested, and what was delivered."],
+        ["Improve again: return to Azure Boards", "Learner feedback and identified defects become new work items in Boards and move through the development process again.", "Improvements are captured and managed rather than lost after release."]
       ],
       "lesson": "Azure DevOps provides a connected management system for moving a product from requirement through controlled development, quality review, delivery, and continued improvement.",
       "limitation": "Azure DevOps does not determine whether instruction is educationally sound. It can manage the workflow, files, reviews, tests, and delivery process, but qualified people must still make instructional and technical decisions."
@@ -632,8 +632,8 @@ window.ADO_CONTENT = {
         "Deliverable capability"
       ],
       [
-        "Story / PBI / Requirement / Issue",
-        "Customer value, name depends on process"
+        "User Story / Product Backlog Item / Requirement",
+        "Customer value; the name depends on the process (Agile, Scrum, or CMMI). The Basic process uses Epic, Issue, and Task with no Feature level."
       ],
       [
         "Task",

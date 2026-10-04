@@ -14,6 +14,7 @@
   --surface-2: #eef3f8;
   --line: #c8d4df;
   --shadow: 0 10px 30px rgb(20 54 82 / 9%);
+  --on-blue: #ffffff;
   --radius: 16px;
   color-scheme: light;
 }
@@ -34,6 +35,8 @@
   --surface-2: #20303d;
   --line: #405665;
   --shadow: 0 12px 34px rgb(0 0 0 / 25%);
+  /* Dark ink on the light-blue buttons keeps text contrast above 7:1; white on #62abeb was 2.5:1. */
+  --on-blue: #0b1a26;
   color-scheme: dark;
 }
 
@@ -74,8 +77,10 @@ footer { border-top: 1px solid var(--line); background: var(--surface); color: v
 footer p { margin: auto; }
 .page-head { margin-bottom: 24px; }
 .page-head p { color: var(--muted); font-size: 1.05rem; }
-.button { border: 1px solid transparent; border-radius: 9px; padding: 9px 13px; background: var(--blue); color: white; cursor: pointer; font-weight: 750; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 7px; }
-.button:hover { background: var(--blue-strong); color: white; }
+.button { border: 1px solid transparent; border-radius: 9px; padding: 9px 13px; background: var(--blue); color: var(--on-blue); cursor: pointer; font-weight: 750; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 7px; }
+.button:hover { background: var(--blue-strong); color: var(--on-blue); }
+.link-button { display: inline; margin: 0; padding: 0; border: 0; background: none; color: var(--blue); font: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-button:hover { color: var(--blue-strong); }
 .button.secondary { border-color: currentColor; background: transparent; color: inherit; }
 .button.secondary:hover { background: rgb(255 255 255 / 12%); }
 .button.quiet { color: var(--blue); background: var(--blue-soft); }
@@ -100,16 +105,18 @@ footer p { margin: auto; }
 .progress-label { display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: .88rem; }
 .sticky-progress { position: sticky; top: 0; z-index: 5; margin-bottom: 18px; padding: 12px 15px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(10px); }
 .path-list { display: grid; gap: 17px; }
-.path-card { border-left: 6px solid var(--line); }
+.path-card { min-width: 0; border-left: 6px solid var(--line); scroll-margin-top: 84px; }
 .path-card.complete { border-left-color: var(--green); }
 .path-heading { display: flex; gap: 14px; align-items: flex-start; }
-.step-number { flex: 0 0 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: white; background: var(--blue); font-weight: 850; }
+.step-number { flex: 0 0 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: var(--on-blue); background: var(--blue); font-weight: 850; }
 .path-heading h3 { margin-bottom: 4px; }
 .location { margin: 0; color: var(--teal); font-size: .76rem; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
 .lesson { color: var(--ink); }
 .stop-figure { margin: 16px 0; }
-.stop-figure a { display: inline-block; max-width: 100%; border-radius: 12px; }
-.stop-figure img { display: block; width: auto; max-width: min(100%, 672px); height: auto; border: 1px solid var(--line); border-radius: 12px; }
+/* A block link with a fixed maximum width gives the image a definite width before it loads, so the figure
+   reserves its full height and nothing below it shifts. */
+.stop-figure a { display: block; max-width: 672px; border-radius: 12px; }
+.stop-figure img { display: block; width: 100%; max-width: 672px; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
 .stop-figure a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .start-steps { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
 .start-steps li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); }
@@ -121,8 +128,8 @@ footer p { margin: auto; }
 .tab-group-label { margin: 0 0 6px; color: var(--muted); font-size: .76rem; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
 .workflow-figure { margin: 16px 0; }
 .map-tabs + .tab-group-label { margin-top: 4px; }
-.workflow-figure a { display: inline-block; max-width: 100%; border-radius: 12px; }
-.workflow-figure img { display: block; width: auto; max-width: min(100%, 760px); height: auto; border: 1px solid var(--line); border-radius: 12px; }
+.workflow-figure a { display: block; max-width: 760px; border-radius: 12px; }
+.workflow-figure img { display: block; width: 100%; max-width: 760px; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
 .workflow-figure a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 
 .set-size { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; }
@@ -138,7 +145,7 @@ details summary { cursor: pointer; }
 .check-label input { width: 19px; height: 19px; accent-color: var(--green); }
 .map-tabs, .practice-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .tab { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 12px; cursor: pointer; font-weight: 700; }
-.tab.active { color: white; background: var(--blue); border-color: var(--blue); }
+.tab.active { color: var(--on-blue); background: var(--blue); border-color: var(--blue); }
 .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 14px; align-items: stretch; }
 .flow-node { position: relative; min-height: 145px; padding: 16px; border: 1px solid var(--line); border-top: 5px solid var(--blue); border-radius: 13px; background: var(--surface); }
 .flow-node:nth-child(4n+2) { border-top-color: var(--teal); }
@@ -176,9 +183,6 @@ details summary { cursor: pointer; }
 .map-layers > li { position: relative; }
 .map-layer-connector { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); height: 30px; line-height: 30px; color: var(--blue); font-weight: 850; }
 .map-combined { max-width: none; margin-bottom: 0; padding: 12px; border-top: 2px solid var(--blue); text-align: center; }
-.map-analogies { margin-top: 18px; border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; }
-.map-analogies > summary, .map-analogy > summary { min-height: 24px; font-weight: 750; }
-.map-analogy { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; }
 .map-mappings { padding-left: 24px; }
 .map-mappings li { margin: 16px 0; }
 .map-mappings h4 { margin-bottom: 6px; }
@@ -220,6 +224,8 @@ details summary { cursor: pointer; }
 .mm-hint { margin: 12px 0 0; font-size: .9rem; }
 .mm-frame { position: relative; overflow: hidden; height: 360px; min-height: 360px; margin-top: 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .mm-frame.dragging { cursor: grabbing; }
+.mm-frame.narrow .mm-node { white-space: normal; }
+.mm-frame.narrow .mm-label { max-width: 150px; padding: 6px 9px; font-size: .9rem; text-align: left; }
 .mm-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .mm-links { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
 .mm-links path { fill: none; stroke: var(--blue); stroke-width: 1.5; opacity: .65; }
@@ -267,15 +273,19 @@ details summary { cursor: pointer; }
   .header-inner { align-items: flex-start; flex-direction: column; }
   .header-actions { justify-content: flex-start; }
   .app-layout { grid-template-columns: 1fr; }
-  .sidebar { position: sticky; top: 0; z-index: 20; min-height: auto; padding: 8px; border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
-  #nav { display: flex; width: max-content; }
-  .nav-button { width: auto; white-space: nowrap; }
+  /* Below the sidebar breakpoint the menu becomes a row of chips that wraps, so every section stays visible. */
+  .sidebar { position: sticky; top: 0; z-index: 20; min-height: auto; padding: 8px 10px; border-right: 0; border-bottom: 1px solid var(--line); }
+  #nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .nav-button { width: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: .9rem; white-space: nowrap; }
+  .nav-button.active { box-shadow: none; border-color: var(--blue); }
   .sidebar-note { display: none; }
-  .nav-group { align-self: center; margin: 0 2px 0 12px; }
-  .nav-group:first-child { margin-left: 4px; }
+  .nav-group { display: none; }
   .filter-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 680px) {
+  /* Every section stays visible on a phone: the menu wraps instead of scrolling sideways. */
+  .sidebar { position: static; }
+  .path-card { scroll-margin-top: 12px; }
   .grid.two, .grid.three { grid-template-columns: 1fr; }
   #main-content { padding: 18px 13px 34px; }
   .header-inner { padding: 25px 16px; }

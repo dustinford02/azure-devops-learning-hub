@@ -59,13 +59,13 @@ window.ADO_AIDS = {
     { "speaker": "An engineer", "line": "The pipeline failed.", "ask": "What do you say?", "answer": "A pipeline builds and tests the change automatically. A failure means the change did not pass the gate, so it should not ship until the cause is fixed and the run is green." },
     { "speaker": "A new project manager", "line": "Which interface should I learn first?", "ask": "What do you say?", "scenario": 9 },
 
-    { "speaker": "A colleague", "line": "What is a pull request, in plain language?", "ask": "What do you say?", "answer": "It is a proposed change to the code. Someone reviews it, checks run, and only then does it become part of the main version." },
+    { "speaker": "A colleague", "line": "What is a pull request, in plain language?", "ask": "What do you say?", "answer": "It is a proposed change to the code. Teammates review it, and if branch policies require it, a build must pass and a work item must be linked before it merges into the main version." },
     { "speaker": "An engineer", "line": "The release pull request is still open.", "ask": "What do you ask?", "scenario": 2 },
     { "speaker": "A colleague", "line": "How is a sprint different from a milestone on the program schedule?", "ask": "What do you say?", "answer": "A sprint is a fixed short work window, usually two weeks, where the team commits to a set of work and finishes it. A milestone is a promised date you owe the customer. Boards tracks the sprint; the program schedule still owns the milestone." },
     { "speaker": "An engineer", "line": "The fraud-data dependency is threatening the sprint goal.", "ask": "What do you say?", "scenario": 1 },
     { "speaker": "A stakeholder", "line": "What has to happen before we see the release?", "ask": "What do you say?", "scenario": 4 },
 
-    { "speaker": "A colleague", "line": "Continuous delivery or continuous deployment: what is the difference?", "ask": "What do you say?", "answer": "Delivery means every change that passes the pipeline is packaged and ready, and a person decides when it is released. Deployment means it is released automatically with no human gate. Same pipeline, different last step." },
+    { "speaker": "A colleague", "line": "Continuous delivery or continuous deployment: what is the difference?", "ask": "What do you say?", "answer": "Continuous delivery means every change that passes the pipeline is built, tested, and deployed through environments such as test and production, and approvals and checks can gate each stage. Continuous deployment removes the manual approval, so a passing change reaches production automatically. Same pipeline, different last gate." },
     { "speaker": "An engineer", "line": "The pipeline failed.", "ask": "What do you ask?", "scenario": 3 },
     { "speaker": "A manager", "line": "A contractor needs access to one project only. How do we set that up?", "ask": "What do you say?", "answer": "Through the company login, not a separate account. Entra ID carries the identity and the project role carries the permission, so you grant the lowest role that does the job on that one project." },
     { "speaker": "An engineer", "line": "I am a Contributor, but I cannot push.", "ask": "What do you say?", "scenario": 7 },
@@ -77,7 +77,7 @@ window.ADO_AIDS = {
     { "speaker": "A tester", "line": "The dashboard is green, but a required test is missing.", "ask": "What do you say?", "scenario": 13 },
     { "speaker": "A program lead", "line": "Why would a defense contractor care about this?", "ask": "What do you say?", "answer": "Every change is tracked, reviewed, and tied to a result. That is configuration management with an audit trail, plus company login and role-based access through Entra ID." },
 
-    { "speaker": "An engineer", "line": "A script needs to read the repo overnight. What do we give it?", "ask": "What do you say?", "answer": "A personal access token scoped to read that one repo, with a short expiry. The risk is that it acts as you, so it does whatever its scope allows if it leaks. Revoke it when the job is done." },
+    { "speaker": "An engineer", "line": "A script needs to read the repo overnight. What do we give it?", "ask": "What do you say?", "answer": "Prefer a Microsoft Entra identity, such as a service principal or managed identity, with read access to that one repo. If the tool can only use a personal access token, scope it to read that repo, set a short expiry, and revoke it when the job ends. Either credential acts as whoever owns it, so keep it in a protected secret store." },
     { "speaker": "An engineer", "line": "The pipeline has to deploy to Azure without anyone signing in.", "ask": "What do you say?", "scenario": 11 },
     { "speaker": "An engineer", "line": "This legacy script can only use a personal access token.", "ask": "What do you say?", "scenario": 14 }
   ],

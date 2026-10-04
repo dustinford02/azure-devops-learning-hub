@@ -22,6 +22,7 @@
     daily: "ado-daily-set-v1",
     dailySize: "ado-daily-size-v1",
     quiz: "ado-weekly-quiz-v1",
+    scenarios: "ado-scenarios-reviewed-v1",
   };
   // Navigation is grouped by what the learner is doing, in the order a new learner needs it.
   const NAV_GROUPS = [
@@ -48,6 +49,8 @@
   let cardIndex = 0;
   let scenarioIndex = 0;
   let quizIndex = 0;
+  // A guided stop to scroll to once the path view has rendered (set by "Continue" and the mind map).
+  let pendingStop = null;
   let catalogData = loadCatalog();
   const catalogFilters = { search: "", type: "all", level: "all", topic: "all", sort: "relevance" };
 
@@ -117,16 +120,26 @@
     ];
   }
 
+  const TOPIC_RULES = [
+    ["AI and automation", /copilot|agentic|\bai\b|machine learn|mcp server/],
+    ["Security and governance", /security|secure|permission|identity|governance|compliance|credential|secret/],
+    ["Artifacts and packages", /artifact|package|dependenc|feed|versioning/],
+    ["Testing and quality", /test|quality|validate|verification/],
+    ["Pipelines and delivery", /pipeline|deploy|release|continuous integration|continuous delivery|agent pool|infrastructure|automation/],
+    ["Repos and source control", /git|repo|branch|pull request|source control|inner source/],
+    ["Boards and planning", /board|agile|plan|work item|sprint|kanban|technical debt/],
+    ["Analytics and feedback", /feedback|monitor|dashboard|analytics|observability|knowledge/],
+  ];
+
+  // The title decides the topic first; the summary and subjects decide only when the title is generic, and the
+  // product tags last, because Microsoft tags many modules with every Azure DevOps product.
   function topicFor(item) {
-    const haystack = `${item.title} ${item.summary} ${(item.subjects || []).join(" ")} ${(item.products || []).join(" ")}`.toLowerCase();
-    if (/copilot|agentic|\bai\b|machine learn|mcp server/.test(haystack)) return "AI and automation";
-    if (/security|secure|permission|identity|governance|compliance|credential|secret/.test(haystack)) return "Security and governance";
-    if (/artifact|package|dependenc|feed|versioning/.test(haystack)) return "Artifacts and packages";
-    if (/test|quality|validate|verification/.test(haystack)) return "Testing and quality";
-    if (/pipeline|deploy|release|continuous integration|continuous delivery|agent pool|infrastructure|automation/.test(haystack)) return "Pipelines and delivery";
-    if (/git|repo|branch|pull request|source control|inner source/.test(haystack)) return "Repos and source control";
-    if (/board|agile|plan|work item|sprint|kanban|technical debt/.test(haystack)) return "Boards and planning";
-    if (/feedback|monitor|dashboard|analytics|observability|knowledge/.test(haystack)) return "Analytics and feedback";
+    const layers = [item.title, `${item.summary} ${(item.subjects || []).join(" ")}`, (item.products || []).join(" ")];
+    for (const layer of layers) {
+      const haystack = String(layer || "").toLowerCase();
+      const match = TOPIC_RULES.find(([, pattern]) => pattern.test(haystack));
+      if (match) return match[0];
+    }
     return "Foundations and platform";
   }
 
@@ -156,8 +169,20 @@
     })[activeView]();
     if (focus) {
       view.focus({ preventScroll: true });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // The path view scrolls to a requested stop itself; everything else starts at the top.
+      if (!document.querySelector(".path-card[data-scroll-target]")) window.scrollTo({ top: 0, behavior: "smooth" });
     }
+    const target = document.querySelector(".path-card[data-scroll-target]");
+    if (target) {
+      target.removeAttribute("data-scroll-target");
+      requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  }
+
+  // Open the guided path at one stop. Works whether or not the path view is already showing.
+  function openStop(index) {
+    pendingStop = index;
+    setHash("path");
   }
 
   function pageHead(title, description) {
@@ -278,8 +303,7 @@
         </div>
       </section>`;
     document.getElementById("continue-path").onclick = () => {
-      setHash("path");
-      if (nextIndex >= 0) setTimeout(() => document.getElementById(`stop-${nextIndex + 1}`)?.scrollIntoView({ behavior: "smooth" }), 60);
+      if (nextIndex >= 0) openStop(nextIndex); else setHash("path");
     };
     document.getElementById("open-maps").onclick = () => setHash("maps");
     document.getElementById("open-cards").onclick = () => openPractice("cards");
@@ -296,8 +320,8 @@
     "Program brief": ["step-01-program-brief.jpg", 672, 480, "Program brief overview: the five Azure DevOps services are Boards to plan and track work, Repos to store the code, Pipelines to build and release, Test Plans to record the checks, and Artifacts to store the packages. Azure DevOps is not the Azure cloud. Stakeholder access is a free, limited access level, not a universal read-only role; private-project Repos and Test Plans need higher access or licensing."],
     "Project access": ["step-02-project-access.jpg", 672, 480, "Project access hierarchy: an organization contains projects, the Fraud Detection project contains teams, including the Delivery Team. A person must be invited or connected. The PM task checklist is to confirm the account and directory, confirm the organization, project, and team, and request access without creating duplicates."],
     "Project setup": ["step-03-project-setup.jpg", 672, 480, "Project setup: the project is the main boundary for work, code, and delivery settings. Inside the Fraud Detection project, a Project Administrator manages one project and the Delivery Team keeps backlog, board, sprint, repo, and release connected. Outside it, a Project Collection Administrator governs every project and organization-level settings, and that role should be rare. Setup checklist: visibility, process, delivery team and team administrator, initial members."],
-    "Access review": ["step-04-access-review.jpg", 672, 480, "Access review: an access level decides which features a person can use (Stakeholder, Basic, Basic plus Test Plans, Visual Studio subscription). Permissions, granted through groups, decide what a person can do in a specific scope: Readers view a project, Contributors change work and code, Project Administrators configure one project, Build Administrators manage build resources, and Project Collection Administrators have organization-wide power. An explicit Deny usually blocks an inherited Allow. Billing is tied to an Azure subscription. Request the least access that gets the work done and know the billing owner."],
-    "Delivery plan": ["step-05-delivery-plan.jpg", 672, 480, "Delivery plan: a board with Backlog, In progress, and Done columns. Each work item shows acceptance criteria, an owner, and effort, and one item carries a linked dependency on an external data feed. A sprint is a time-box with selected work and capacity. Report status from live work views, not a hand-maintained list."],
+    "Access review": ["step-04-access-review.jpg", 672, 480, "Access review: an access level decides which features a person can use (Stakeholder, Basic, Basic plus Test Plans, Visual Studio subscription). Permissions, granted through groups, decide what a person can do in a specific scope: Readers view a project, Contributors change work and code, Project Administrators configure one project, Build Administrators manage build resources, and Project Collection Administrators have organization-wide power. When Allow and Deny meet at the same scope, Deny wins; an explicit setting on a child object replaces what that identity inherits from the parent. Billing is tied to an Azure subscription. Request the least access that gets the work done and know the billing owner."],
+    "Delivery plan": ["step-05-delivery-plan.jpg", 672, 480, "Delivery plan: a board using the Basic process columns To Do, Doing, and Done (Agile, Scrum, and CMMI use other state names). Each work item shows acceptance criteria, an owner, and effort, and one item carries a linked dependency on an external data feed. A sprint is a time-box with selected work and capacity. Report status from live work views, not a hand-maintained list."],
     "Engineering handoff": ["step-06-engineering-handoff.jpg", 672, 480, "Engineering handoff: in Azure Repos, an engineer works on a branch, pushes it to the repo, and opens a pull request with reviewers, required checks, and branch policies before it merges into the default branch. The pull request links to a work item that shows what the change delivers. The PM needs to see the project, repo, branch, pull request, check status, and linked work item."],
     "Release control": ["step-07-release-control.jpg", 672, 480, "Release control: the pipeline is defined in a versioned YAML file. A trigger with branch filters starts build, then test, then approvals and checks, then deployment into the Test, Staging, and Production environments. Variables hold reusable values, secrets need protected storage, and the output is a versioned package published to Artifacts. A red run is evidence to investigate, not a reason to rerun blindly."],
     "Personal setup": ["step-08-personal-setup.jpg", 672, 480, "Personal setup: user settings cover profile preferences (display, locale, time zone, theme), notifications (assignments, mentions, pull requests, build failures, from both personal and team subscriptions), favorites (projects and teams, backlogs and queries, repos and pipelines), and preview features, which can change and apply at user or organization scope."],
@@ -318,7 +342,7 @@
     const done = completedPath();
     const cards = CONTENT.path.map((stop, index) => {
       const links = stop.links.map(([label, url]) => `<a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`).join(" · ");
-      return `<article class="card path-card ${done.includes(index) ? "complete" : ""}" id="stop-${index + 1}">
+      return `<article class="card path-card ${done.includes(index) ? "complete" : ""}" id="stop-${index + 1}" ${index === pendingStop ? "data-scroll-target" : ""}>
         <div class="path-heading"><span class="step-number">${index + 1}</span><div><p class="location">${escapeHTML(stop.place)}</p><h3>${escapeHTML(stop.title)}</h3></div></div>
         <div class="lesson">${stop.lesson}</div>
         ${stopFigure(stop, index)}<p class="action-box"><strong>Apply it:</strong> ${escapeHTML(stop.action)}</p>
@@ -333,6 +357,7 @@
         <div class="progress-label"><strong id="path-count">${done.length} of ${CONTENT.path.length} complete</strong><button id="reset-path" class="button danger" type="button">Reset path</button></div>
         <div class="progress-track" aria-hidden="true"><span id="path-bar" style="width:${percent(done.length, CONTENT.path.length)}%"></span></div>
       </div><div class="path-list">${cards}</div>`;
+    pendingStop = null;
     document.querySelectorAll(".path-check").forEach(input => {
       input.onchange = () => {
         const index = Number(input.dataset.index);
@@ -385,7 +410,7 @@
     const panels = Object.entries(MAP_META).map(([key, [title, explanation]], index) => `<section class="card map-panel" role="tabpanel" id="map-panel-${key}" aria-labelledby="map-tab-${key}" tabindex="0" ${index + pictures.length === 0 ? "" : "hidden"}>
       <h3>${escapeHTML(title)}</h3><p>${escapeHTML(explanation)}</p>${renderMapBody(key)}
       <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(MAP_RECALL[key])}</div>
-      ${key === "lifecycle" ? renderWorkflowAnalogies() : ""}</section>`).join("");
+      ${key === "lifecycle" && pictures.length ? `<p class="quiet map-explanation">The three everyday pictures above tell the same story in plain language: <button class="link-button" type="button" data-next-map="${pictures[0].id}">open the first picture</button>.</p>` : ""}</section>`).join("");
     view.innerHTML = `${pageHead("Visual maps", "Start with the everyday pictures to see how the work flows. Then explore how Azure DevOps work, structure, access, and delivery connect.")}
       ${pictures.length ? `<p class="tab-group-label" id="map-group-pictures">Everyday pictures, simplest to most comprehensive</p>
       <div class="map-tabs" role="tablist" aria-labelledby="map-group-pictures">${tabs.slice(0, pictures.length).join("")}</div>
@@ -449,16 +474,6 @@
     return `<div class="map-access" role="group" aria-label="Combined access layers"><ul class="map-layers">${nodes.map((node, index) => `<li>${node}${index < nodes.length - 1 ? '<span class="map-layer-connector" aria-hidden="true">+</span>' : ""}</li>`).join("")}</ul><p class="map-combined"><strong>Effective access depends on the combined stack.</strong></p></div>`;
   }
 
-  function renderWorkflowAnalogies() {
-    return `<details class="map-analogies"><summary>Workflow analogies</summary>
-      <p>These comparisons progress from simplest to most comprehensive. Start with Restaurant Order for the fastest introduction, use the House comparison for coordination and quality gates, then use Training Course as the recommended comprehensive analogy.</p>
-      ${CONTENT.workflowAnalogies.map(analogy => `<details class="map-analogy"><summary>${escapeHTML(analogy.title)}</summary><p>${escapeHTML(analogy.introduction)}</p>
-        <ol class="map-mappings">${analogy.steps.map(([heading, mapping, problem]) => `<li><h4>${escapeHTML(heading)}</h4><p>${escapeHTML(mapping)}</p>${problem ? `<p><strong>Problem solved:</strong> ${escapeHTML(problem)}</p>` : ""}</li>`).join("")}</ol>
-        <p><strong>Central lesson:</strong> ${escapeHTML(analogy.lesson)}</p><p><strong>Limitation:</strong> ${escapeHTML(analogy.limitation)}</p></details>`).join("")}
-      <p>Azure DevOps does not create the product for the team. It connects planning, source control, reviews, testing, and delivery. Qualified people still make the instructional and technical decisions.</p>
-    </details>`;
-  }
-
   // The first sentence of a mapping, used where a step has no "problem solved" line.
   function firstSentence(text) {
     const end = text.indexOf(". ");
@@ -494,6 +509,10 @@
   const MM_SCALE = [0.4, 2];
   const MM_GAP = { column: 70, row: 8, group: 18, pad: 24 };
   const MM_READABLE = 0.62;
+  // On a phone-width frame the labels wrap, the columns sit closer together, and Fit may shrink the map further so
+  // that it really fits; the detail panel below the map shows the selected topic at full size.
+  const MM_NARROW = { frame: 560, column: 24, readable: 0.5 };
+  const mmNarrow = () => { const frame = document.getElementById("mm-frame"); return !!frame && frame.clientWidth < MM_NARROW.frame; };
   const mmDate = value => formatDate(`${value}T12:00:00`);
 
   function mmBuildIndex() {
@@ -627,6 +646,9 @@
       ? [document.activeElement.className, document.activeElement.dataset.id] : null;
     const before = anchorId && mm.box[anchorId] ? mm.box[anchorId] : null;
     const order = mmVisible();
+    const narrow = mmNarrow();
+    document.getElementById("mm-frame").classList.toggle("narrow", narrow);
+    const columnGap = narrow ? MM_NARROW.column : MM_GAP.column;
     if (!order.includes(mm.selected)) mm.selected = mm.index[mm.selected]?.parent && order.includes(mm.index[mm.selected].parent) ? mm.index[mm.selected].parent : "0";
 
     nodesHost.innerHTML = order.map(id => {
@@ -651,7 +673,7 @@
       columnWidth[depth] = Math.max(columnWidth[depth] || 0, sizes[id][0]);
     });
     const columnX = [];
-    columnWidth.forEach((width, depth) => { columnX[depth] = depth ? columnX[depth - 1] + columnWidth[depth - 1] + MM_GAP.column : MM_GAP.pad; });
+    columnWidth.forEach((width, depth) => { columnX[depth] = depth ? columnX[depth - 1] + columnWidth[depth - 1] + columnGap : MM_GAP.pad; });
     const box = {};
     let cursor = MM_GAP.pad;
     let lastLeafParent = null;
@@ -748,7 +770,7 @@
     // Fit the width first, then the height, but never shrink the text below a readable size.
     let scale = Math.min(1, frame.clientWidth / width);
     if (height * scale > tallest) scale = tallest / height;
-    scale = Math.min(1, Math.max(MM_READABLE, scale));
+    scale = Math.min(1, Math.max(mmNarrow() ? MM_NARROW.readable : MM_READABLE, scale));
     const frameHeight = Math.min(tallest, Math.max(360, Math.ceil(height * scale)));
     frame.style.height = `${frameHeight}px`;
     mm.scale = scale;
@@ -845,7 +867,9 @@
     const hint = document.getElementById("mm-hint");
     if (!hint) return;
     if (!mm.recall) {
-      hint.textContent = "Drag the map to move it. Select a topic to open it. Arrow keys work too.";
+      hint.textContent = mmNarrow()
+        ? "Select a topic to open it and read it below the map. Drag to move the map, pinch or use + to zoom."
+        : "Drag the map to move it. Select a topic to open it. Arrow keys work too.";
       return;
     }
     const total = mmBranches().length;
@@ -880,10 +904,7 @@
       <div class="button-row section-gap">${stop}${link}</div>
       <p class="quiet mm-status">Topic names come from the ${escapeHTML(MINDMAPS[mm.map].source)}. The explanation is added by this hub and was checked against Microsoft Learn on ${escapeHTML(mmDate(MINDMAPS[mm.map].checked))}. Confirm current details in the linked Microsoft page.</p>`;
     const button = document.getElementById("mm-open-stop");
-    if (button) button.onclick = () => {
-      setHash("path");
-      setTimeout(() => document.getElementById(`stop-${node.stop + 1}`)?.scrollIntoView({ behavior: "smooth" }), 60);
-    };
+    if (button) button.onclick = () => openStop(node.stop);
   }
 
   function mmBindFrame() {
@@ -1003,7 +1024,7 @@
 
   function renderCatalog() {
     const topicOptions = TOPICS.map(topic => `<option value="${escapeHTML(topic)}" ${catalogFilters.topic === topic ? "selected" : ""}>${escapeHTML(topic)}</option>`).join("");
-    view.innerHTML = `${pageHead("Interactive Microsoft Learn catalog", "Search and filter the Azure DevOps catalog by level, content type, topic, duration, and update date. Mark completed items without leaving the hub.")}
+    view.innerHTML = `${pageHead("Interactive Microsoft Learn catalog", "Search the Azure DevOps catalog, filter it by content type, level, and topic, and sort by title, duration, or update date. Mark completed items without leaving the hub.")}
       <section class="card">
         <div class="filter-panel">
           <label class="field">Search<input id="catalog-search" type="search" value="${escapeHTML(catalogFilters.search)}" placeholder="Pipelines, boards, permissions..."></label>
@@ -1055,7 +1076,7 @@
         <p class="catalog-source">${formatDuration(item.duration)} · Updated ${formatDate(item.modified)}</p></div>
       <div class="catalog-actions"><label class="check-label"><input class="catalog-check" type="checkbox" data-uid="${escapeHTML(item.uid)}" ${completed.has(item.uid) ? "checked" : ""}> Complete</label><a class="button quiet" href="${safeURL(item.url)}" target="_blank" rel="noopener noreferrer">Open source</a></div>
     </article>`).join("");
-    document.getElementById("catalog-results").innerHTML = `<div class="results-bar"><strong>${items.length} results</strong><span>${formatDuration(minutes)} total catalog time</span></div><div class="catalog-grid">${cards || '<div class="card empty">No catalog items match these filters.</div>'}</div>`;
+    document.getElementById("catalog-results").innerHTML = `<div class="results-bar"><strong>${items.length} ${items.length === 1 ? "result" : "results"}</strong><span>${formatDuration(minutes)} total catalog time</span></div><div class="catalog-grid">${cards || '<div class="card empty">No catalog items match these filters.</div>'}</div>`;
     document.querySelectorAll(".catalog-check").forEach(input => {
       input.onchange = () => {
         const current = completedCatalog();
@@ -1248,20 +1269,84 @@
     });
   }
 
+  // Scenarios the learner has compared against the reference response, kept in this browser.
+  function reviewedScenarios() {
+    return new Set(readJSON(KEYS.scenarios, []).filter(value => Number.isInteger(value) && CONTENT.scenarios[value]));
+  }
+
   function renderScenario() {
+    const body = document.getElementById("practice-body");
+    const total = CONTENT.scenarios.length;
+    const reviewed = reviewedScenarios();
+    if (reviewed.size >= total) {
+      body.innerHTML = `<article class="card practice-card">
+        <div class="progress-label"><strong>PM scenarios</strong><span>Complete</span></div>
+        <p class="term-front done-mark">${total}/${total}</p>
+        <p>You have compared your response with the reference response for all ${total} scenarios. Start again any time to see how your answers have changed.</p>
+        <div class="button-row"><button id="scenarios-restart" class="button quiet" type="button">Start the scenarios again</button><button id="scenarios-to-path" class="button" type="button">Go to the guided path</button></div>
+      </article>`;
+      document.getElementById("scenarios-restart").onclick = () => { writeJSON(KEYS.scenarios, []); scenarioIndex = 0; renderScenario(); };
+      document.getElementById("scenarios-to-path").onclick = () => setHash("path");
+      return;
+    }
+    if (reviewed.has(scenarioIndex) || !CONTENT.scenarios[scenarioIndex]) scenarioIndex = CONTENT.scenarios.findIndex((_, index) => !reviewed.has(index));
     const [question, answer] = CONTENT.scenarios[scenarioIndex];
-    document.getElementById("practice-body").innerHTML = `<article class="card practice-card"><div class="progress-label"><strong>Scenario ${scenarioIndex + 1} of ${CONTENT.scenarios.length}</strong><span>Explain before comparing</span></div><div class="progress-track"><span style="width:${percent(scenarioIndex + 1, CONTENT.scenarios.length)}%"></span></div><h3>${escapeHTML(question)}</h3><label class="field">Your response<textarea id="scenario-response" rows="5" placeholder="State what you would inspect, decide, or communicate."></textarea></label><div id="scenario-answer" class="answer-panel hidden"><strong>Reference response</strong><p>${escapeHTML(answer)}</p></div><div class="button-row"><button id="compare-scenario" class="button" type="button">Compare</button><button id="next-scenario" class="button quiet" type="button">Next scenario</button></div></article>`;
-    document.getElementById("compare-scenario").onclick = () => document.getElementById("scenario-answer").classList.remove("hidden");
-    document.getElementById("next-scenario").onclick = () => { scenarioIndex = (scenarioIndex + 1) % CONTENT.scenarios.length; renderScenario(); };
+    const remaining = total - reviewed.size;
+    body.innerHTML = `<article class="card practice-card">
+      <div class="progress-label"><strong>Scenario ${scenarioIndex + 1} of ${total}</strong><span>${reviewed.size} of ${total} reviewed</span></div>
+      <div class="progress-track"><span style="width:${percent(reviewed.size, total)}%"></span></div>
+      <h3>${escapeHTML(question)}</h3>
+      <label class="field">Your response<textarea id="scenario-response" rows="5" placeholder="State what you would inspect, decide, or communicate."></textarea></label>
+      <div id="scenario-answer" class="answer-panel hidden"><strong>Reference response</strong><p>${escapeHTML(answer)}</p></div>
+      <div class="button-row"><button id="compare-scenario" class="button" type="button">Compare</button><button id="next-scenario" class="button quiet ${remaining > 1 ? "" : "hidden"}" type="button">Skip for now</button></div>
+    </article>`;
+    const next = () => {
+      const current = reviewedScenarios();
+      const following = CONTENT.scenarios.findIndex((_, index) => index > scenarioIndex && !current.has(index));
+      scenarioIndex = following >= 0 ? following : CONTENT.scenarios.findIndex((_, index) => !current.has(index));
+      renderScenario();
+    };
+    document.getElementById("compare-scenario").onclick = () => {
+      document.getElementById("scenario-answer").classList.remove("hidden");
+      const current = reviewedScenarios();
+      current.add(scenarioIndex);
+      writeJSON(KEYS.scenarios, [...current].sort((a, b) => a - b));
+      document.querySelector(".progress-label span").textContent = `${current.size} of ${total} reviewed`;
+      document.querySelector(".progress-track > span").style.width = `${percent(current.size, total)}%`;
+      const button = document.getElementById("next-scenario");
+      button.textContent = current.size >= total ? "See your result" : "Next scenario";
+      button.classList.remove("quiet", "hidden");
+      button.focus();
+    };
+    document.getElementById("next-scenario").onclick = next;
   }
 
   function renderSources() {
-    const groups = CONTENT.path.map((stop, index) => `<section class="card source-group"><h3>${index + 1}. ${escapeHTML(stop.title)}</h3><ul>${stop.links.map(([label, url]) => `<li><a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a></li>`).join("")}</ul></section>`).join("");
     view.innerHTML = `${pageHead("Sources and scope", "The guided content is a concise learning layer. Microsoft documentation and catalog metadata remain the source of truth for current product behavior.")}
       <div class="callout"><strong>Catalog basis:</strong> The bundled snapshot was retrieved from the public Microsoft Learn Catalog API on ${formatDate(SNAPSHOT.generatedAt)}. Use Refresh from Microsoft in the catalog view for current metadata.</div>
       <section class="card section-gap"><h3>Primary reference</h3><p><a href="https://learn.microsoft.com/en-us/azure/devops/user-guide/what-is-azure-devops?view=azure-devops" target="_blank" rel="noopener noreferrer">What is Azure DevOps?</a> defines the platform, its five core services, dashboards, collaboration services, service hooks, and administrative scope.</p><p><a href="https://learn.microsoft.com/en-us/training/support/catalog-api" target="_blank" rel="noopener noreferrer">Microsoft Learn Catalog API overview</a> documents the catalog metadata used by the interactive index.</p></section>
-      <h3 class="section-gap">Sources for each guided stop</h3><div>${groups}</div>
-      ${REFERENCES.length ? `<h3 class="section-gap">More official references</h3><p class="quiet">Microsoft pages from the Azure DevOps get-started list that the guided stops do not link. Use them when you want more depth on a topic.</p><div class="grid two">${REFERENCES.map(([title, links]) => `<section class="card source-group"><h3>${escapeHTML(title)}</h3><ul>${links.map(([label, url]) => `<li><a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a></li>`).join("")}</ul></section>`).join("")}</div>` : ""}`;
+      <label class="field glossary-toolbar section-gap">Filter sources<input id="sources-search" type="search" placeholder="Search a page title or topic, such as permissions or pipelines"></label>
+      <div id="sources-list"></div>`;
+    const input = document.getElementById("sources-search");
+    input.addEventListener("input", () => renderSourcesList(input.value));
+    renderSourcesList("");
+  }
+
+  function renderSourcesList(query) {
+    const needle = query.trim().toLowerCase();
+    const link = ([label, url]) => `<li><a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a></li>`;
+    const keep = (group, [label]) => !needle || `${group} ${label}`.toLowerCase().includes(needle);
+    const stops = CONTENT.path.map((stop, index) => {
+      const links = stop.links.filter(entry => keep(`${stop.place} ${stop.title}`, entry));
+      return links.length ? `<section class="card source-group"><h3>${index + 1}. ${escapeHTML(stop.title)}</h3><ul>${links.map(link).join("")}</ul></section>` : "";
+    }).join("");
+    const extra = REFERENCES.map(([title, links]) => {
+      const kept = links.filter(entry => keep(title, entry));
+      return kept.length ? `<section class="card source-group"><h3>${escapeHTML(title)}</h3><ul>${kept.map(link).join("")}</ul></section>` : "";
+    }).join("");
+    document.getElementById("sources-list").innerHTML = `${stops ? `<h3 class="section-gap">Sources for each guided stop</h3><div>${stops}</div>` : ""}
+      ${extra ? `<h3 class="section-gap">More official references</h3><p class="quiet">Microsoft pages from the Azure DevOps get-started list that the guided stops do not link. Use them when you want more depth on a topic.</p><div class="grid two">${extra}</div>` : ""}
+      ${!stops && !extra ? '<div class="card empty">No sources match that filter.</div>' : ""}`;
   }
 
   function setupNavigation() {
@@ -1324,7 +1409,12 @@
   setupNetwork();
   setupInstall();
   addEventListener("hashchange", () => show(location.hash.slice(1) || "home", true));
-  addEventListener("resize", () => { if (activeView === "mindmap" && !mm.manual) mmFit(); });
+  addEventListener("resize", () => {
+    if (activeView !== "mindmap") return;
+    const frame = document.getElementById("mm-frame");
+    if (frame && frame.classList.contains("narrow") !== mmNarrow()) mmDraw();
+    if (!mm.manual) mmFit();
+  });
   if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js");
   show(location.hash.slice(1) || "home");
 })();
