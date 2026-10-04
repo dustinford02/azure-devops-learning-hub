@@ -12,12 +12,15 @@ The page also opens locally through a static web server. Installation and offlin
 
 ## What the learner can do
 
+- Begin on a "Start here" page that gives a new learner three short steps: see how the work flows, do the next guided stop, and do the cards for the day.
+- See three everyday workflow pictures, from simplest to most complete: a restaurant order, building and inspecting a house, and developing and publishing a training course. Each maps everyday steps to Azure DevOps services.
 - Follow a 12-stop path from the Azure DevOps service model through planning, source control, pipelines, testing, artifacts, integrations, security, and administration.
 - See the complete delivery lifecycle, platform structure, Boards hierarchy, access model, and pipeline anatomy as interactive visual maps.
+- Explore an expandable mind map of platform orientation topics: open and close branches, move and zoom the map, read a short explanation of any topic, jump to the matching guided stop, and use recall mode to test yourself.
 - Study a full-resolution identity, security, and governance infographic with zoom, pan, and open-original controls.
 - Search and filter a bundled snapshot of 79 Microsoft Learn modules and 15 learning paths for Azure DevOps.
 - Refresh the catalog from the public Microsoft Learn Catalog API when the endpoint is available.
-- Practice with glossary flashcards, spaced review dates, and project-manager scenarios.
+- Practice in three ways: a daily set of 5 to 10 flashcards with spaced review dates, a weekly quiz of five spoken questions, and project-manager scenarios.
 - Track guided lessons and catalog items locally without creating an account.
 - Install the app and use its core learning content offline.
 
@@ -61,7 +64,11 @@ The included GitHub Actions workflow deploys the static application after every 
 
 - `index.html`: Application shell and semantic structure.
 - `styles.css`: Responsive layout, themes, accessibility, and print styles.
-- `content.js`: Guided lessons, visual-map data, glossary, and scenarios.
+- `content.js`: Guided lessons, visual-map data, workflow analogies, glossary, and scenarios.
+- `guided-path/`: Twelve step visuals, one per guided stop, shown directly above each stop's "Apply it" box. They are corrected redraws of the panels in the source graphic "12 Guided Path Steps.jpg"; the wording follows each stop's lesson text.
+- `learning-aids.js`: Drawing instructions for the three workflow graphics, weekly quiz questions, and extra official reference links shown in Sources.
+- `workflows/`: The three workflow graphics shown in Visual maps. Their wording comes from the workflow analogies in `content.js`.
+- `mindmaps.js`: Mind map topic trees. Topic names come from the notebook mind map; explanations are added by this hub. Append another object to add a map.
 - `catalog-snapshot.js`: Bundled Microsoft Learn catalog metadata for offline use.
 - `DevOps_Identity_and_Governance_Map.png`: Full-resolution identity and governance infographic.
 - `app.js`: Navigation, filtering, progress tracking, practice interactions, and installation support.

@@ -320,7 +320,7 @@ window.ADO_CONTENT = {
     [
       "RBAC",
       "Role-based access control",
-      "Access follows a role and scope: the cashier key does not open every door."
+      "Access follows a role and scope, not a one-off exception for one person."
     ],
     [
       "PAT",
