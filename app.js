@@ -20,6 +20,7 @@
     ["catalog", "Learn catalog", "▦"],
     ["glossary", "Glossary", "A"],
     ["practice", "Practice", "✓"],
+    ["retain", "Retain", "↻"],
     ["sources", "Sources", "↗"],
   ];
   const TOPICS = [
@@ -140,6 +141,7 @@
       catalog: renderCatalog,
       glossary: renderGlossary,
       practice: renderPractice,
+      retain: renderRetain,
       sources: renderSources,
     })[activeView]();
     if (focus) {
@@ -186,7 +188,7 @@
         <div class="flow">
           <div class="flow-node"><span class="flow-index">1</span><h3>Learn</h3><p>Read one guided stop and complete its concrete action.</p></div>
           <div class="flow-node"><span class="flow-index">2</span><h3>See</h3><p>Use a visual map to place the concept inside the full system.</p></div>
-          <div class="flow-node"><span class="flow-index">3</span><h3>Recall</h3><p>Answer a check, flashcard, or delivery scenario without looking.</p></div>
+          <div class="flow-node"><span class="flow-index">3</span><h3>Recall</h3><p>Answer a check, flashcard, or delivery scenario without looking. Use Retain for criterion retrieval and scheduled relearning.</p></div>
           <div class="flow-node"><span class="flow-index">4</span><h3>Extend</h3><p>Filter the Microsoft Learn catalog when you need deeper coverage.</p></div>
         </div>
       </section>`;
@@ -512,6 +514,16 @@
     document.getElementById("practice-body").innerHTML = `<article class="card practice-card"><div class="progress-label"><strong>Scenario ${scenarioIndex + 1} of ${CONTENT.scenarios.length}</strong><span>Explain before comparing</span></div><div class="progress-track"><span style="width:${percent(scenarioIndex + 1, CONTENT.scenarios.length)}%"></span></div><h3>${escapeHTML(question)}</h3><label class="field">Your response<textarea id="scenario-response" rows="5" placeholder="State what you would inspect, decide, or communicate."></textarea></label><div id="scenario-answer" class="answer-panel hidden"><strong>Reference response</strong><p>${escapeHTML(answer)}</p></div><div class="button-row"><button id="compare-scenario" class="button" type="button">Compare</button><button id="next-scenario" class="button quiet" type="button">Next scenario</button></div></article>`;
     document.getElementById("compare-scenario").onclick = () => document.getElementById("scenario-answer").classList.remove("hidden");
     document.getElementById("next-scenario").onclick = () => { scenarioIndex = (scenarioIndex + 1) % CONTENT.scenarios.length; renderScenario(); };
+  }
+
+  function renderRetain() {
+    if (window.ADO_RETAIN) window.ADO_RETAIN.render(view);
+    else view.innerHTML = "<p>Retain module failed to load.</p>";
+  }
+
+  function renderRetain() {
+    if (window.ADO_RETAIN) window.ADO_RETAIN.render(view);
+    else view.innerHTML = "<p>Retain module failed to load.</p>";
   }
 
   function renderSources() {

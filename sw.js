@@ -1,4 +1,4 @@
-const CACHE_NAME = "ado-learning-hub-v4";
+const CACHE_NAME = "ado-learning-hub-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./content.js",
   "./catalog-snapshot.js",
   "./app.js",
+  "./retain.js",
   "./DevOps_Identity_and_Governance_Map.png",
   "./manifest.webmanifest",
   "./icon.svg"
