@@ -1,4 +1,4 @@
-const CACHE_NAME = "ado-learning-hub-v10";
+const CACHE_NAME = "ado-learning-hub-v12";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -10,6 +10,17 @@ const APP_SHELL = [
   "./workflows/workflow-1-restaurant-order.jpg",
   "./workflows/workflow-2-building-a-house.jpg",
   "./workflows/workflow-3-training-course.jpg",
+  "./reference-pictures/reference-1-devops-loop.png",
+  "./reference-pictures/reference-2-devops-lifecycle.png",
+  "./reference-pictures/reference-3-what-is-azure-devops.jpg",
+  "./reference-pictures/reference-4-core-services.jpg",
+  "./reference-pictures/reference-5-day-0-learner-guide.jpg",
+  "./reference-pictures/reference-6-orientation-mind-map.png",
+  "./power-bi/01-analytics-views-hub.png",
+  "./power-bi/02-default-analytics-views.png",
+  "./power-bi/03-get-data-azure-devops-connector.png",
+  "./power-bi/04-navigator-select-view.png",
+  "./power-bi/05-odata-feed-connect.png",
   "./guided-path/step-01-program-brief.jpg",
   "./guided-path/step-02-project-access.jpg",
   "./guided-path/step-03-project-setup.jpg",

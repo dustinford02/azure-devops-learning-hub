@@ -131,6 +131,31 @@ footer p { margin: auto; }
 .workflow-figure a { display: block; max-width: 760px; border-radius: 12px; }
 .workflow-figure img { display: block; width: 100%; max-width: 760px; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
 .workflow-figure a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.reference-figure { margin: 16px 0; }
+.reference-figure > a { display: block; max-width: var(--reference-width, 760px); border-radius: 12px; }
+.reference-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.reference-figure > a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.reference-figure figcaption { max-width: 46rem; margin-top: 8px; color: var(--muted); font-size: .88rem; }
+.reference-text h4 { margin: 16px 0 4px; }
+.reference-text ul { margin: 0; padding-left: 22px; }
+.reference-text li { margin: 4px 0; }
+.lesson-heading { margin: 22px 0 6px; font-size: 1.02rem; }
+.lesson-list, .lesson-steps { margin: 8px 0; padding-left: 24px; }
+.lesson-list li, .lesson-steps > li { margin: 8px 0; overflow-wrap: anywhere; }
+.lesson-steps > li::marker { font-weight: 800; }
+.lesson-table { width: 100%; margin: 16px 0; border-collapse: collapse; font-size: .95rem; }
+.lesson-table th, .lesson-table td { padding: 10px 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+.lesson-table thead th { background: var(--surface-2); }
+.lesson-credit { margin-top: 10px; font-size: .88rem; }
+@media (max-width: 680px) {
+  .lesson-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .lesson-table, .lesson-table tbody, .lesson-table tr, .lesson-table th, .lesson-table td { display: block; }
+  .lesson-table tr { margin: 0 0 12px; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+  .lesson-table th, .lesson-table td { border: 0; border-bottom: 1px solid var(--line); }
+  .lesson-table tr > :last-child { border-bottom: 0; }
+  .lesson-table tbody th { background: var(--surface-2); }
+  .lesson-table td::before { content: attr(data-label) ": "; font-weight: 800; }
+}
 
 .set-size { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; }
 .set-size select { width: auto; padding: 4px 8px; }

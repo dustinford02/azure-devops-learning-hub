@@ -10,6 +10,10 @@
   const WORKFLOW_SIZES = {"restaurant": [760, 599], "house": [760, 737], "course": [760, 935]};
   const QUIZ = Array.isArray(AIDS.quiz) ? AIDS.quiz : [];
   const REFERENCES = Array.isArray(AIDS.references) ? AIDS.references : [];
+  // Reference pictures supplied by the hub owner, shown as the third tab group in Visual maps.
+  const REFERENCE_PICTURES = Array.isArray(AIDS.referencePictures) ? AIDS.referencePictures : [];
+  // The Power BI reporting lesson, shown as the fourth tab group in Visual maps.
+  const REPORTING = AIDS.reporting && Array.isArray(AIDS.reporting.panels) ? AIDS.reporting : { panels: [] };
   const view = document.getElementById("view");
   const nav = document.getElementById("nav");
   const KEYS = {
@@ -404,18 +408,26 @@
 
   function renderMaps() {
     const pictures = WORKFLOWS.filter(workflowContent);
-    const entries = [...pictures.map(flow => [flow.id, [flow.tab]]), ...Object.entries(MAP_META)];
+    const entries = [...pictures.map(flow => [flow.id, [flow.tab]]), ...Object.entries(MAP_META), ...REFERENCE_PICTURES.map(picture => [picture.id, [picture.tab]]), ...REPORTING.panels.map(panel => [panel.id, [panel.tab]])];
+    const systemEnd = pictures.length + Object.keys(MAP_META).length;
+    const referenceEnd = systemEnd + REFERENCE_PICTURES.length;
     const tabs = entries.map(([key, [title]], index) => `<button class="tab ${index === 0 ? "active" : ""}" type="button" role="tab" id="map-tab-${key}" aria-controls="map-panel-${key}" aria-selected="${index === 0}" tabindex="${index === 0 ? "0" : "-1"}" data-map="${key}">${escapeHTML(title)}</button>`);
     const picturePanels = pictures.map((flow, index) => renderWorkflowPanel(flow, index, pictures)).join("");
     const panels = Object.entries(MAP_META).map(([key, [title, explanation]], index) => `<section class="card map-panel" role="tabpanel" id="map-panel-${key}" aria-labelledby="map-tab-${key}" tabindex="0" ${index + pictures.length === 0 ? "" : "hidden"}>
       <h3>${escapeHTML(title)}</h3><p>${escapeHTML(explanation)}</p>${renderMapBody(key)}
       <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(MAP_RECALL[key])}</div>
       ${key === "lifecycle" && pictures.length ? `<p class="quiet map-explanation">The three everyday pictures above tell the same story in plain language: <button class="link-button" type="button" data-next-map="${pictures[0].id}">open the first picture</button>.</p>` : ""}</section>`).join("");
-    view.innerHTML = `${pageHead("Visual maps", "Start with the everyday pictures to see how the work flows. Then explore how Azure DevOps work, structure, access, and delivery connect.")}
+    const referencePanels = REFERENCE_PICTURES.map(renderReferencePanel).join("");
+    const reportingPanels = REPORTING.panels.map(renderReportingPanel).join("");
+    view.innerHTML = `${pageHead("Visual maps", `Start with the everyday pictures to see how the work flows. Then explore how Azure DevOps work, structure, access, and delivery connect.${REFERENCE_PICTURES.length ? " The reference pictures are one-page summaries to study or print." : ""}${REPORTING.panels.length ? " The last group is a short lesson on reporting work items in Power BI." : ""}`)}
       ${pictures.length ? `<p class="tab-group-label" id="map-group-pictures">Everyday pictures, simplest to most comprehensive</p>
       <div class="map-tabs" role="tablist" aria-labelledby="map-group-pictures">${tabs.slice(0, pictures.length).join("")}</div>
       <p class="tab-group-label" id="map-group-system">System maps</p>` : ""}
-      <div class="map-tabs" role="tablist" aria-label="Azure DevOps visual maps">${tabs.slice(pictures.length).join("")}</div>${picturePanels}${panels}`;
+      <div class="map-tabs" role="tablist" aria-label="Azure DevOps visual maps">${tabs.slice(pictures.length, systemEnd).join("")}</div>
+      ${REFERENCE_PICTURES.length ? `<p class="tab-group-label" id="map-group-reference">Reference pictures, general to detailed</p>
+      <div class="map-tabs" role="tablist" aria-labelledby="map-group-reference">${tabs.slice(systemEnd, referenceEnd).join("")}</div>` : ""}
+      ${REPORTING.panels.length ? `<p class="tab-group-label" id="map-group-reporting">${escapeHTML(REPORTING.label)}</p>
+      <div class="map-tabs" role="tablist" aria-labelledby="map-group-reporting">${tabs.slice(referenceEnd).join("")}</div>` : ""}${picturePanels}${panels}${referencePanels}${reportingPanels}`;
     const controls = [...view.querySelectorAll('[role="tab"]')];
     const activate = selected => {
       controls.forEach(button => {
@@ -444,6 +456,8 @@
       };
     });
     view.querySelectorAll("[data-map-to-path]").forEach(button => { button.onclick = () => setHash("path"); });
+    view.querySelectorAll("[data-map-to-view]").forEach(button => { button.onclick = () => setHash(button.dataset.mapToView); });
+    view.querySelectorAll("[data-open-stop]").forEach(button => { button.onclick = () => openStop(Number(button.dataset.openStop)); });
   }
 
   function renderMapBody(key) {
@@ -500,6 +514,72 @@
       <div class="callout warning map-explanation"><strong>Limitation:</strong> ${escapeHTML(analogy.limitation)}</div>
       <div class="callout map-explanation"><strong>Recall prompt:</strong> Cover the middle column and name the Azure DevOps service for each step.</div>
       <div class="button-row section-gap">${next ? `<button class="button" type="button" data-next-map="${next.id}">Next picture: ${escapeHTML(next.tab)}</button>` : ""}<button class="button ${next ? "quiet" : ""}" type="button" data-map-to-path>Go to the guided path</button></div>
+    </section>`;
+  }
+
+  // One reference picture. The picture is shown as supplied; its source line, text version, and recall prompt come from
+  // "referencePictures" in learning-aids.js. A picture with a "note" has misspelled labels, so its text version starts open.
+  function renderReferencePanel(picture, index) {
+    const next = REFERENCE_PICTURES[index + 1];
+    const [width, height] = picture.size;
+    const sections = picture.text.map(([heading, lines]) => `<h4>${escapeHTML(heading)}</h4><ul>${lines.map(line => `<li>${escapeHTML(line)}</li>`).join("")}</ul>`).join("");
+    const links = (picture.links || []).map(([label, url]) => `<a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`).join(" · ");
+    return `<section class="card map-panel" role="tabpanel" id="map-panel-${picture.id}" aria-labelledby="map-tab-${picture.id}" tabindex="0" hidden>
+      <p class="location">Reference picture ${index + 1} of ${REFERENCE_PICTURES.length}</p>
+      <h3>${escapeHTML(picture.title)}</h3>
+      <p>${escapeHTML(picture.intro)}</p>
+      ${picture.note ? `<div class="callout warning map-explanation"><strong>Check the labels:</strong> ${escapeHTML(picture.note)}</div>` : ""}
+      <figure class="reference-figure" style="--reference-width:${width}px"><a href="reference-pictures/${picture.file}" target="_blank" rel="noopener" aria-label="Open this reference picture at full size"><img src="reference-pictures/${picture.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(picture.alt)}"></a>
+        <figcaption>Select the picture to open it at full size. ${escapeHTML(picture.source)}</figcaption></figure>
+      <details class="check" ${innerWidth < 680 || picture.note ? "open" : ""}><summary><strong>Read this picture as text</strong></summary><div class="reference-text">${sections}</div></details>
+      <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(picture.recall)}</div>
+      ${links ? `<p class="quiet map-explanation">Official page: ${links}</p>` : ""}
+      <div class="button-row section-gap">${next ? `<button class="button" type="button" data-next-map="${next.id}">Next picture: ${escapeHTML(next.tab)}</button>` : ""}${picture.view ? `<button class="button" type="button" data-map-to-view="${escapeHTML(picture.view[0])}">${escapeHTML(picture.view[1])}</button>` : ""}<button class="button quiet" type="button" data-map-to-path>Go to the guided path</button></div>
+    </section>`;
+  }
+
+  /* ---------- Power BI reporting lesson: text, screenshots, and a table from "reporting" in learning-aids.js ---------- */
+
+  // Lesson text is escaped first; a term wrapped in two asterisks on each side is then shown in bold.
+  function lessonInline(text) {
+    return escapeHTML(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  }
+
+  // A Microsoft Learn screenshot, shown no larger than its original size and credited to the page it comes from.
+  function lessonFigure(figure) {
+    const [width, height] = figure.size;
+    return `<figure class="reference-figure" style="--reference-width:${width}px"><a href="power-bi/${figure.file}" target="_blank" rel="noopener" aria-label="Open this screenshot at full size"><img src="power-bi/${figure.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(figure.alt)}"></a>
+      <figcaption>${lessonInline(figure.caption)} Screenshot from Microsoft Learn: <a href="${safeURL(figure.page[1])}" target="_blank" rel="noopener noreferrer">${escapeHTML(figure.page[0])}</a>. © Microsoft.</figcaption></figure>`;
+  }
+
+  function lessonBlock([kind, value]) {
+    if (kind === "p") return `<p>${lessonInline(value)}</p>`;
+    if (kind === "h") return `<h4 class="lesson-heading">${escapeHTML(value)}</h4>`;
+    if (kind === "solved") return `<div class="callout map-explanation"><strong>Problem solved:</strong> ${lessonInline(value)}</div>`;
+    if (kind === "limit") return `<div class="callout warning map-explanation"><strong>Limitation:</strong> ${lessonInline(value)}</div>`;
+    if (kind === "tip") return `<div class="callout map-explanation"><strong>Tip:</strong> ${lessonInline(value)}</div>`;
+    if (kind === "ul") return `<ul class="lesson-list">${value.map(item => `<li>${lessonInline(item)}</li>`).join("")}</ul>`;
+    if (kind === "ol") return `<ol class="lesson-steps">${value.map(step => `<li>${lessonInline(step.text)}${step.fig ? lessonFigure(step.fig) : ""}</li>`).join("")}</ol>`;
+    if (kind === "fig") return lessonFigure(value);
+    if (kind === "table") {
+      const rows = value.rows.map(row => `<tr>${row.map((cell, index) => index === 0 ? `<th scope="row">${lessonInline(cell)}</th>` : `<td data-label="${escapeHTML(value.head[index])}">${lessonInline(cell)}</td>`).join("")}</tr>`).join("");
+      return `<table class="lesson-table"><thead><tr>${value.head.map(cell => `<th scope="col">${escapeHTML(cell)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    return "";
+  }
+
+  function renderReportingPanel(panel, index) {
+    const next = REPORTING.panels[index + 1];
+    const stop = CONTENT.path[REPORTING.stop] ? REPORTING.stop : null;
+    const links = panel.links.map(([label, url]) => `<a href="${safeURL(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`).join(" · ");
+    return `<section class="card map-panel" role="tabpanel" id="map-panel-${panel.id}" aria-labelledby="map-tab-${panel.id}" tabindex="0" hidden>
+      <p class="location">Power BI reporting ${index + 1} of ${REPORTING.panels.length}</p>
+      <h3>${escapeHTML(panel.title)}</h3>
+      ${panel.blocks.map(lessonBlock).join("")}
+      <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(panel.recall)}</div>
+      <p class="quiet map-explanation">Official pages: ${links}</p>
+      <p class="quiet lesson-credit">Screenshots are from Microsoft Learn and belong to Microsoft. Microsoft publishes the source of its Azure DevOps documentation under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 4.0</a> license. This lesson was checked against the linked Microsoft pages on ${escapeHTML(mmDate(REPORTING.checked))}. Menus and names can change, so confirm the current steps in the linked page.</p>
+      <div class="button-row section-gap">${next ? `<button class="button" type="button" data-next-map="${next.id}">Next: ${escapeHTML(next.tab)}</button>` : ""}${stop === null ? "" : `<button class="button ${next ? "quiet" : ""}" type="button" data-open-stop="${stop}">Open guided stop ${stop + 1}</button>`}<button class="button quiet" type="button" data-map-to-path>Go to the guided path</button></div>
     </section>`;
   }
 
@@ -1345,7 +1425,7 @@
       return kept.length ? `<section class="card source-group"><h3>${escapeHTML(title)}</h3><ul>${kept.map(link).join("")}</ul></section>` : "";
     }).join("");
     document.getElementById("sources-list").innerHTML = `${stops ? `<h3 class="section-gap">Sources for each guided stop</h3><div>${stops}</div>` : ""}
-      ${extra ? `<h3 class="section-gap">More official references</h3><p class="quiet">Microsoft pages from the Azure DevOps get-started list that the guided stops do not link. Use them when you want more depth on a topic.</p><div class="grid two">${extra}</div>` : ""}
+      ${extra ? `<h3 class="section-gap">More official references</h3><p class="quiet">Microsoft pages that the guided stops do not link: the Azure DevOps get-started list and the pages behind the Power BI reporting lesson. Use them when you want more depth on a topic.</p><div class="grid two">${extra}</div>` : ""}
       ${!stops && !extra ? '<div class="card empty">No sources match that filter.</div>' : ""}`;
   }
 
