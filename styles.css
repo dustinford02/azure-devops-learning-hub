@@ -115,9 +115,9 @@ footer p { margin: auto; }
 .stop-figure { margin: 16px 0; }
 /* A block link with a fixed maximum width gives the image a definite width before it loads, so the figure
    reserves its full height and nothing below it shifts. */
-.stop-figure a { display: block; max-width: 672px; border-radius: 12px; }
+.stop-figure > a { display: block; max-width: 672px; border-radius: 12px; }
 .stop-figure img { display: block; width: 100%; max-width: 672px; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.stop-figure a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.stop-figure > a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .start-steps { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
 .start-steps li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); }
 .start-steps h3 { margin: 2px 0 3px; font-size: 1.08rem; }
@@ -128,14 +128,18 @@ footer p { margin: auto; }
 .tab-group-label { margin: 0 0 6px; color: var(--muted); font-size: .76rem; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; }
 .workflow-figure { margin: 16px 0; }
 .map-tabs + .tab-group-label { margin-top: 4px; }
-.workflow-figure a { display: block; max-width: 760px; border-radius: 12px; }
+.workflow-figure > a { display: block; max-width: 760px; border-radius: 12px; }
 .workflow-figure img { display: block; width: 100%; max-width: 760px; height: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.workflow-figure a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.workflow-figure > a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .reference-figure { margin: 16px 0; }
 .reference-figure > a { display: block; max-width: var(--reference-width, 760px); border-radius: 12px; }
 .reference-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .reference-figure > a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
-.reference-figure figcaption { max-width: 46rem; margin-top: 8px; color: var(--muted); font-size: .88rem; }
+.reference-figure figcaption, .stop-figure figcaption, .workflow-figure figcaption, .infographic-credit { max-width: 46rem; margin: 8px 0 0; color: var(--muted); font-size: .88rem; overflow-wrap: anywhere; }
+.picture-credit .link-button { font-size: inherit; }
+.credit-list { margin: 8px 0 0; padding-left: 22px; }
+.credit-list li { margin: 14px 0; overflow-wrap: anywhere; }
+.credit-where { display: block; margin: 2px 0 4px; color: var(--muted); font-size: .86rem; }
 .reference-text h4 { margin: 16px 0 4px; }
 .reference-text ul { margin: 0; padding-left: 22px; }
 .reference-text li { margin: 4px 0; }

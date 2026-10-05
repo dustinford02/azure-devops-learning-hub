@@ -14,6 +14,9 @@
   const REFERENCE_PICTURES = Array.isArray(AIDS.referencePictures) ? AIDS.referencePictures : [];
   // The Power BI reporting lesson, shown as the fourth tab group in Visual maps.
   const REPORTING = AIDS.reporting && Array.isArray(AIDS.reporting.panels) ? AIDS.reporting : { panels: [] };
+  // Picture credits: one entry per picture or set of pictures, shown under each picture and listed in Sources.
+  const CREDITS = AIDS.pictureCredits && Array.isArray(AIDS.pictureCredits.groups) ? AIDS.pictureCredits : { groups: [] };
+  const CREDIT_BY_ID = Object.fromEntries(CREDITS.groups.flatMap(group => group.items).map(item => [item.id, item]));
   const view = document.getElementById("view");
   const nav = document.getElementById("nav");
   const KEYS = {
@@ -55,6 +58,8 @@
   let quizIndex = 0;
   // A guided stop to scroll to once the path view has rendered (set by "Continue" and the mind map).
   let pendingStop = null;
+  // Set when a learner asks for the picture credits from another section; Sources then opens at that list.
+  let pendingCredits = false;
   let catalogData = loadCatalog();
   const catalogFilters = { search: "", type: "all", level: "all", topic: "all", sort: "relevance" };
 
@@ -174,7 +179,7 @@
     if (focus) {
       view.focus({ preventScroll: true });
       // The path view scrolls to a requested stop itself; everything else starts at the top.
-      if (!document.querySelector(".path-card[data-scroll-target]")) window.scrollTo({ top: 0, behavior: "smooth" });
+      if (!document.querySelector(".path-card[data-scroll-target], #picture-credits[data-scroll-target]")) window.scrollTo({ top: 0, behavior: "smooth" });
     }
     const target = document.querySelector(".path-card[data-scroll-target]");
     if (target) {
@@ -187,6 +192,25 @@
   function openStop(index) {
     pendingStop = index;
     setHash("path");
+  }
+
+  // Open the Picture credits list on the Sources page, from any section.
+  function openCredits() {
+    const list = document.getElementById("picture-credits");
+    if (activeView === "sources" && list) {
+      list.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    pendingCredits = true;
+    setHash("sources");
+  }
+
+  // The short credit shown with a picture. "forId" ties the line to a picture that is not inside a figure.
+  function creditLine(id, forId) {
+    const item = CREDIT_BY_ID[id];
+    if (!item) return "";
+    const source = item.link ? ` Source page: <a href="${safeURL(item.link[1])}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.link[0])}</a>.` : "";
+    return `<span class="picture-credit"${forId ? ` data-credit-for="${escapeHTML(forId)}"` : ""}><strong>Picture credit:</strong> ${escapeHTML(item.short)}${source} <button class="link-button" type="button" data-open-credits>All picture credits</button></span>`;
   }
 
   function pageHead(title, description) {
@@ -339,7 +363,7 @@
     const figure = STOP_FIGURES[stop.place];
     if (!figure) return "";
     const [file, width, height, alt] = figure;
-    return `<figure class="stop-figure"><a href="guided-path/${file}" target="_blank" rel="noopener" aria-label="Open the step ${index + 1} visual at full size"><img src="guided-path/${file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(alt)}"></a></figure>`;
+    return `<figure class="stop-figure"><a href="guided-path/${file}" target="_blank" rel="noopener" aria-label="Open the step ${index + 1} visual at full size"><img src="guided-path/${file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(alt)}"></a><figcaption>${creditLine("guided")}</figcaption></figure>`;
   }
 
   function renderPath() {
@@ -509,7 +533,7 @@
       <p class="location">Picture ${index + 1} of ${pictures.length}: ${escapeHTML(flow.level)}</p>
       <h3>${escapeHTML(analogy.title)}</h3>
       <p>${escapeHTML(analogy.introduction)}</p>
-      <figure class="workflow-figure"><a href="workflows/${flow.file}" target="_blank" rel="noopener" aria-label="Open this workflow picture at full size"><img src="workflows/${flow.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(workflowAlt(analogy))}"></a></figure>
+      <figure class="workflow-figure"><a href="workflows/${flow.file}" target="_blank" rel="noopener" aria-label="Open this workflow picture at full size"><img src="workflows/${flow.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(workflowAlt(analogy))}"></a><figcaption>${creditLine("workflow")}</figcaption></figure>
       <details class="check" ${innerWidth < 680 ? "open" : ""}><summary><strong>Read the steps as text</strong></summary><ol class="map-mappings">${steps}</ol><p><strong>Central lesson:</strong> ${escapeHTML(analogy.lesson)}</p></details>
       <div class="callout warning map-explanation"><strong>Limitation:</strong> ${escapeHTML(analogy.limitation)}</div>
       <div class="callout map-explanation"><strong>Recall prompt:</strong> Cover the middle column and name the Azure DevOps service for each step.</div>
@@ -530,7 +554,7 @@
       <p>${escapeHTML(picture.intro)}</p>
       ${picture.note ? `<div class="callout warning map-explanation"><strong>Check the labels:</strong> ${escapeHTML(picture.note)}</div>` : ""}
       <figure class="reference-figure" style="--reference-width:${width}px"><a href="reference-pictures/${picture.file}" target="_blank" rel="noopener" aria-label="Open this reference picture at full size"><img src="reference-pictures/${picture.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(picture.alt)}"></a>
-        <figcaption>Select the picture to open it at full size. ${escapeHTML(picture.source)}</figcaption></figure>
+        <figcaption>Select the picture to open it at full size. ${creditLine(picture.id)}</figcaption></figure>
       <details class="check" ${innerWidth < 680 || picture.note ? "open" : ""}><summary><strong>Read this picture as text</strong></summary><div class="reference-text">${sections}</div></details>
       <div class="callout map-explanation"><strong>Recall prompt:</strong> ${escapeHTML(picture.recall)}</div>
       ${links ? `<p class="quiet map-explanation">Official page: ${links}</p>` : ""}
@@ -545,11 +569,11 @@
     return escapeHTML(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   }
 
-  // A Microsoft Learn screenshot, shown no larger than its original size and credited to the page it comes from.
+  // A Microsoft Learn screenshot, shown no larger than its original size, with its picture credit and source page.
   function lessonFigure(figure) {
     const [width, height] = figure.size;
     return `<figure class="reference-figure" style="--reference-width:${width}px"><a href="power-bi/${figure.file}" target="_blank" rel="noopener" aria-label="Open this screenshot at full size"><img src="power-bi/${figure.file}" width="${width}" height="${height}" loading="lazy" decoding="async" alt="${escapeHTML(figure.alt)}"></a>
-      <figcaption>${lessonInline(figure.caption)} Screenshot from Microsoft Learn: <a href="${safeURL(figure.page[1])}" target="_blank" rel="noopener noreferrer">${escapeHTML(figure.page[0])}</a>. © Microsoft.</figcaption></figure>`;
+      <figcaption>${lessonInline(figure.caption)} ${creditLine(figure.credit)}</figcaption></figure>`;
   }
 
   function lessonBlock([kind, value]) {
@@ -1080,6 +1104,7 @@
         <div id="infographic-frame" class="infographic-frame" tabindex="0" aria-label="Scrollable identity and governance infographic">
           <img id="identity-governance-map" src="DevOps_Identity_and_Governance_Map.png" alt="Azure DevOps identity, security, and governance workflow map covering Microsoft Entra identity, Zero Trust controls, access levels, settings hierarchy, and administrator roles" width="2048" height="1143">
         </div>
+        <p class="infographic-credit">${creditLine("infographic", "identity-governance-map")}</p>
       </section>
       <section class="grid three section-gap" aria-label="How to study this infographic">
         <article class="card"><p class="location">1. Orient</p><h3>Find the four regions</h3><p>Name the identity baseline, access levels, settings hierarchy, and administrator matrix before reading the details.</p></article>
@@ -1405,11 +1430,32 @@
     view.innerHTML = `${pageHead("Sources and scope", "The guided content is a concise learning layer. Microsoft documentation and catalog metadata remain the source of truth for current product behavior.")}
       <div class="callout"><strong>Catalog basis:</strong> The bundled snapshot was retrieved from the public Microsoft Learn Catalog API on ${formatDate(SNAPSHOT.generatedAt)}. Use Refresh from Microsoft in the catalog view for current metadata.</div>
       <section class="card section-gap"><h3>Primary reference</h3><p><a href="https://learn.microsoft.com/en-us/azure/devops/user-guide/what-is-azure-devops?view=azure-devops" target="_blank" rel="noopener noreferrer">What is Azure DevOps?</a> defines the platform, its five core services, dashboards, collaboration services, service hooks, and administrative scope.</p><p><a href="https://learn.microsoft.com/en-us/training/support/catalog-api" target="_blank" rel="noopener noreferrer">Microsoft Learn Catalog API overview</a> documents the catalog metadata used by the interactive index.</p></section>
+      <p class="section-gap"><button class="link-button" type="button" data-open-credits>Picture credits: where every picture in this hub came from</button></p>
       <label class="field glossary-toolbar section-gap">Filter sources<input id="sources-search" type="search" placeholder="Search a page title or topic, such as permissions or pipelines"></label>
-      <div id="sources-list"></div>`;
+      <div id="sources-list"></div>${renderPictureCredits()}`;
     const input = document.getElementById("sources-search");
     input.addEventListener("input", () => renderSourcesList(input.value));
     renderSourcesList("");
+    if (pendingCredits) {
+      pendingCredits = false;
+      const list = document.getElementById("picture-credits");
+      if (list) {
+        list.setAttribute("data-scroll-target", "");
+        requestAnimationFrame(() => list.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
+    }
+  }
+
+  // The full credit for every picture, grouped by where the picture came from. Wording is in learning-aids.js.
+  function renderPictureCredits() {
+    if (!CREDITS.groups.length) return "";
+    const entry = item => `<li><strong>${escapeHTML(item.name)}</strong><span class="credit-where">Shown in: ${escapeHTML(item.where)}. File: ${escapeHTML(item.files)}</span>${escapeHTML(item.credit)}${item.link ? ` Source page: <a href="${safeURL(item.link[1])}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.link[0])}</a>.` : ""}</li>`;
+    const groups = CREDITS.groups.map(group => `<h4 class="lesson-heading">${escapeHTML(group.title)}</h4><p class="quiet">${escapeHTML(group.note)}</p><ul class="credit-list">${group.items.map(entry).join("")}</ul>`).join("");
+    return `<section class="card section-gap" id="picture-credits">
+      <h3>Picture credits</h3>
+      <p>${escapeHTML(CREDITS.intro)}</p>${groups}
+      <p class="quiet section-gap">${escapeHTML(CREDITS.footnote)} Credits were last reviewed on ${escapeHTML(mmDate(CREDITS.reviewed))}.</p>
+    </section>`;
   }
 
   function renderSourcesList(query) {
@@ -1488,6 +1534,8 @@
   setupTheme();
   setupNetwork();
   setupInstall();
+  // Every "All picture credits" button, in any section, opens the same list.
+  view.addEventListener("click", event => { if (event.target.closest("[data-open-credits]")) openCredits(); });
   addEventListener("hashchange", () => show(location.hash.slice(1) || "home", true));
   addEventListener("resize", () => {
     if (activeView !== "mindmap") return;

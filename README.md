@@ -48,6 +48,16 @@ The guided content and catalog entries point to official Microsoft material, inc
 
 The embedded catalog snapshot was retrieved on 2026-10-03. Microsoft owns the linked learning material. This project supplies the interactive organization, progress tools, visual explanations, and practice layer.
 
+## Picture credits
+
+Every picture in the app carries a short "Picture credit" line, and the Sources page has a Picture credits list with the full statement for each one: where it came from, which tool made it, and what this hub changed. The wording is in `learning-aids.js` under `pictureCredits`, which also records the basis for each statement.
+
+- **Pictures from Microsoft sources (7):** the five Power BI screenshots and the DevOps application lifecycle diagram are Microsoft's and link to their Microsoft Learn pages. The DevOps loop diagram came from Microsoft's Azure DevOps training course according to the hub owner; its exact course page and original artist are not identified.
+- **AI-generated pictures (5):** three reference pictures and the identity and governance infographic were made with Google generative AI, as recorded in the Content Credentials embedded in the original files (two of them, and the infographic's original, name Gemini Notebook, which is Google NotebookLM). The mind map picture was exported from Gemini Notebook according to the hub owner.
+- **Pictures drawn for this hub with AI assistance (15):** the twelve guided path step pictures were redrawn with Claude from a Gemini-generated graphic, and the three workflow pictures were drawn with Claude; the hub owner credits Gemini for the original designs.
+
+The picture files were resized or delivered with Claude, so the Content Credentials tag embedded in each file names Claude as the tool that provided the file. The web-sized copies do not carry the original Google credentials; the visible credits state the origin instead.
+
 ## Run locally
 
 Serve the repository root with any static file server. For example:
